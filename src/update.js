@@ -41,8 +41,6 @@ function update (effect) {
       next = renderThunk(next)
     }
 
-    if (!prev) return create(next)
-
     if (isText(prev)) {
       if (isText(next)) {
         if (prev !== next) setAttribute(node, 'nodeValue', next)
@@ -52,7 +50,7 @@ function update (effect) {
         replaceChild(node.parentNode, newNode, node)
         return newNode
       }
-    } else if (isText(next) || prev.tag !== next.tag) {
+    } else if (isText(next) || !prev || prev.tag !== next.tag) {
       const newNode = create(next)
       replaceChild(node.parentNode, newNode, node)
       return newNode
@@ -73,7 +71,7 @@ function update (effect) {
       const cache = {}
       const pkeys = Object.keys(pattrs)
       const nkeys = Object.keys(nattrs)
-      const len = Math.max(pkeys.len, nkeys.len)
+      const len = Math.max(pkeys.length, nkeys.length)
 
       for (let i = 0; i < len; i++) {
         const p = pkeys[i]
@@ -107,7 +105,7 @@ function update (effect) {
     const nextLen = nchildren.length
 
     for (let i = 0; i < nextLen; i++) {
-      if (i > prevLen) {
+      if (i >= prevLen) {
         appendChild(node, create(nchildren[i]))
       } else {
         updateRecursive(pchildren[i], nchildren[i], node.childNodes[i])
@@ -117,7 +115,7 @@ function update (effect) {
     if (nextLen < prevLen) {
       // Remove nodes starting at the end so that the
       // index doesn't shift on us as we go
-      for (let i = nextLen; i < nextLen; i++) {
+      for (let i = nextLen; i < prevLen; i++) {
         removeChild(node, node.lastChild)
       }
     }
