@@ -9,7 +9,7 @@ const REMOVE_ATTRIBUTE = 'REMOVE_ATTRIBUTE'
 const APPEND_CHILD = 'APPEND_CHILD'
 const REMOVE_CHILD = 'REMOVE_CHILD'
 const REPLACE_CHILD = 'REPLACE_CHILD'
-const REIFY_THUNK = 'REIFY_THUNK'
+const RENDER_THUNK = 'RENDER_THUNK'
 
 /**
  * Action creators for effectful things
@@ -85,9 +85,9 @@ function removeChild (node, childNode) {
   }
 }
 
-function reifyThunk (thunk, prev) {
+function renderThunk (thunk, prev) {
   return {
-    type: REIFY_THUNK,
+    type: RENDER_THUNK,
     payload: {
       thunk,
       prev
@@ -107,7 +107,7 @@ export default {
   appendChild,
   removeChild,
   replaceChild,
-  reifyThunk,
+  renderThunk,
 
   types: {
     CREATE_TEXT_NODE,
@@ -117,6 +117,6 @@ export default {
     APPEND_CHILD,
     REPLACE_CHILD,
     REMOVE_CHILD,
-    REIFY_THUNK
+    RENDER_THUNK
   }
 }

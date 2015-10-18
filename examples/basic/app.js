@@ -3,7 +3,6 @@
  */
 
 import element from 'virtex-element'
-import component from './component'
 
 function app ({counters}) {
   return (
@@ -16,14 +15,19 @@ function app ({counters}) {
   )
 }
 
-const Counter = component(({value = 0, idx}) => {
-  return (
-    <div style={{color: value % 2 ? 'red' : 'blue'}}>
-      <div>Counter: {value}</div>
-      <button onClick={e => increment(idx)}>Increment Counter</button>
-    </div>
-  )
-})
+const Counter = {
+  beforeMount ({idx}) {
+    return increment(idx)
+  },
+  render ({value = 0, idx}) {
+    return (
+      <div style={{color: value % 2 ? 'red' : 'blue'}}>
+        <div>Counter: {value}</div>
+        <button onClick={e => increment(idx)}>Increment Counter</button>
+      </div>
+    )
+  }
+}
 
 function increment (idx) {
   return {

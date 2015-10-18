@@ -5,6 +5,7 @@
 import {applyMiddleware, createStore} from 'redux'
 import reducer from './reducer'
 import dom from 'virtex-dom'
+import component from 'virtex-component'
 
 /**
  * Store
@@ -12,20 +13,8 @@ import dom from 'virtex-dom'
 
 const createStoreWithMiddleware = applyMiddleware(
   dom(document),
-  reify
+  component
 )(createStore)
-
-function reify (api) {
-  return next => action => {
-    if (action.type === 'REIFY_THUNK') {
-      const {thunk, prev} = action.payload
-      thunk.vnode = thunk.render(prev)
-      return thunk.vnode
-    }
-
-    return next(action)
-  }
-}
 
 /**
  * Exports

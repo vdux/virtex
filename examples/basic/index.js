@@ -13,7 +13,7 @@ import app from './app'
  */
 
 const store = createStore({counters: [0, 1]})
-const {create, render} = virtex(store.dispatch)
+const {create, update} = virtex(store.dispatch)
 
 /**
  * Initialize
@@ -21,17 +21,24 @@ const {create, render} = virtex(store.dispatch)
 
 let tree
 let node
+let pending = false
 
 document.addEventListener('DOMContentLoaded', () => {
+  store.subscribe(() => {
+    if (pending) return
+    pending = true
+    setTimeout(rerender)
+  })
+
   tree = app(store.getState())
   node = create(tree)
   document.body.appendChild(node)
   delegant(document.body, store.dispatch)
-  store.subscribe(rerender)
 })
 
 function rerender () {
+  pending = false
   const newTree = app(store.getState())
-  render(tree, newTree, node)
+  update(tree, newTree, node)
   tree = newTree
 }

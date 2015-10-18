@@ -2,10 +2,9 @@
  * Imports
  */
 
-import {compose} from './compose'
 import actions from './actions'
-import _render from './render'
-import _create from './create'
+import update from './update'
+import create from './create'
 import element from './element'
 
 /**
@@ -14,8 +13,8 @@ import element from './element'
 
 function virtex (effect) {
   return {
-    create: _create(effect),
-    render: _render(effect)
+    create: create(effect),
+    update: update(effect)
   }
 }
 

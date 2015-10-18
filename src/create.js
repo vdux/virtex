@@ -2,27 +2,28 @@
  * Imports
  */
 
-import {composeAll} from './compose'
+import {composeAll} from './util/compose'
+import isThunk from './util/isThunk'
+import isText from './util/isText'
 import actions from './actions'
-import isThunk from './isThunk'
-import isText from './isText'
+import map from './util/map'
 
 /**
  * Create the initial document fragment
  */
 
 function create (effect) {
-  const {appendChild, setAttribute, createElement, reifyThunk, createTextNode}
+  const {appendChild, setAttribute, createElement, renderThunk, createTextNode}
     = composeAll(effect, actions)
 
   return function createRecursive (vnode) {
-    if (isThunk(vnode)) vnode = reifyThunk(vnode)
+    if (isThunk(vnode)) vnode = renderThunk(vnode)
     if (isText(vnode)) return createTextNode(vnode)
 
     return createElement(
       vnode.tag,
       vnode.attrs,
-      vnode.children && vnode.children.map(createRecursive)
+      map(vnode.children, createRecursive)
     )
   }
 }
