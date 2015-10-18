@@ -5,6 +5,7 @@
 import {compose, composeAll} from './util/compose'
 import isThunk from './util/isThunk'
 import isText from './util/isText'
+import forEach from './util/forEach'
 import actions from './actions'
 import _create from './create'
 
@@ -65,15 +66,9 @@ function update (effect) {
     const nattrs = next.attrs
 
     if (pattrs && !nattrs) {
-      const keys = Object.keys(pattrs)
-      for (let i = 0, len = keys.len; i < len; i++) {
-        removeAttribute(node, keys[i], pattrs[keys[i]])
-      }
+      forEach(pattrs, (val, key) => removeAttribute(node, key))
     } else if (!pattrs && nattrs) {
-      const keys = Object.keys(nattrs)
-      for (let i = 0, len = keys.len; i < len; i++) {
-        setAttribute(node, keys[i], nattrs[keys[i]])
-      }
+      forEach(nattrs, (val, key) => setAttribute(node, key, val))
     } else if (pattrs && nattrs) {
       const cache = {}
       const pkeys = Object.keys(pattrs)
