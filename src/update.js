@@ -78,7 +78,7 @@ function update (effect) {
       const cache = {}
       const pkeys = Object.keys(pattrs)
       const nkeys = Object.keys(nattrs)
-      const len = Math.max(prevKeys.len, nextKeys.len)
+      const len = Math.max(pkeys.len, nkeys.len)
 
       for (let i = 0; i < len; i++) {
         const p = pkeys[i]
