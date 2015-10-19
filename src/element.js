@@ -8,7 +8,9 @@ import thunkify from './util/thunkify'
  * Vnode creator
  */
 
-function element (tag, attrs, ...children) {
+function element (tag, attrs /*, ...children */) {
+  const children = filterFlatten(arguments, 2)
+
   if (typeof tag !== 'string') {
     return thunkify(tag, attrs, children)
   }
@@ -16,27 +18,33 @@ function element (tag, attrs, ...children) {
   return {
     tag,
     attrs,
-    children: filterFlatten(children)
+    children: children
   }
 }
 
 /**
  * Filter out undefined and flatten nested
- * arrays.  In-place, for speed.
+ * arrays.
  */
 
-function filterFlatten (children) {
-  for (let i = 0, len = children.length; i < len; i++) {
-    let item = children[i]
+function filterFlatten (children, i) {
+  const len = children.length
+  const arr = []
 
-    if (item === undefined) {
-      children.splice(i, 1)
-    } else if (Array.isArray(item)) {
-      children.splice.apply(children, [i, 1].concat(filterFlatten(item)))
+  for (; i < len; i++) {
+    const item = children[i]
+    if (item !== undefined && item !== null) {
+      if (Array.isArray(item)) {
+        arr.push.apply(arr, filterFlatten(item, 0))
+      } else if (typeof item === 'string' || typeof item === 'number') {
+        arr.push({type: 'text', value: item})
+      } else {
+        arr.push(item)
+      }
     }
   }
 
-  return children
+  return arr
 }
 
 /**

@@ -29,6 +29,7 @@ function update (effect) {
 
 
   return function updateRecursive (prev, next, node) {
+
     /**
      * Render thunks if necessary
      */
@@ -37,15 +38,18 @@ function update (effect) {
       if (isThunk(next)) next = renderThunk(next, prev)
       prev = renderThunk(prev)
       if (next === prev) {
+        next.element = node
         return node
       }
     } else if (isThunk(next)) {
       next = renderThunk(next)
     }
 
+    next.element = node
+
     if (isText(prev)) {
       if (isText(next)) {
-        if (prev !== next) setAttribute(node, 'nodeValue', next)
+        if (prev.value !== next.value) setAttribute(node, 'nodeValue', next.value)
         return node
       } else {
         const newNode = create(next)
@@ -111,22 +115,27 @@ function update (effect) {
           else appendChild(node, newChild)
           break
         case keyDiff.REMOVE:
-          removeChild(node, node.childNodes[prev.idx])
+          removeChild(node, nativeElement(prev.item))
           break
         case keyDiff.MOVE:
-          const child = node.childNodes[prev.idx]
-          updateRecursive(prev.item, next.item, child)
+          updateRecursive(prev.item, next.item, nativeElement(prev.item))
           removeChild(node, child)
           insertBefore(node, child, node.childNodes[pos])
           break
         case keyDiff.UPDATE:
-          updateRecursive(prev.item, next.item, node.childNodes[next.idx])
+          updateRecursive(prev.item, next.item, nativeElement(prev.item))
           break
       }
     })
 
     return node
   }
+}
+
+function nativeElement (vnode) {
+  return vnode.vnode
+    ? vnode.vnode.element
+    : vnode.element
 }
 
 /**

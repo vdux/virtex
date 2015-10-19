@@ -18,13 +18,13 @@ function create (effect) {
 
   return function createRecursive (vnode) {
     if (isThunk(vnode)) vnode = renderThunk(vnode)
-    if (isText(vnode)) return createTextNode(vnode)
 
-    return createElement(
-      vnode.tag,
-      vnode.attrs,
-      map(vnode.children, createRecursive)
-    )
+    const node = isText(vnode)
+      ? createTextNode(vnode.value)
+      : createElement(vnode.tag, vnode.attrs, map(vnode.children, createRecursive))
+
+    vnode.element = node
+    return node
   }
 }
 

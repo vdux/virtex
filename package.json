@@ -10,11 +10,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "babel": "^5.8.23",
-    "babel-tape-runner": "^1.2.0",
-    "key-diff": "git://github.com/joshrtay/key-diff",
-    "standard": "^5.3.1",
-    "tape": "^4.2.1"
+    "key-diff": "git://github.com/joshrtay/key-diff"
   },
   "devDependencies": {
     "babel": "^5.8.21",
