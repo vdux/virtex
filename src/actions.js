@@ -9,6 +9,7 @@ const REMOVE_ATTRIBUTE = 'REMOVE_ATTRIBUTE'
 const APPEND_CHILD = 'APPEND_CHILD'
 const REMOVE_CHILD = 'REMOVE_CHILD'
 const REPLACE_CHILD = 'REPLACE_CHILD'
+const INSERT_BEFORE = 'INSERT_BEFORE'
 const RENDER_THUNK = 'RENDER_THUNK'
 
 /**
@@ -85,6 +86,17 @@ function removeChild (node, childNode) {
   }
 }
 
+function insertBefore (node, newChild, oldChild) {
+  return {
+    type: INSERT_BEFORE,
+    payload: {
+      node,
+      newChild,
+      oldChild
+    }
+  }
+}
+
 function renderThunk (thunk, prev) {
   return {
     type: RENDER_THUNK,
@@ -107,6 +119,7 @@ export default {
   appendChild,
   removeChild,
   replaceChild,
+  insertBefore,
   renderThunk,
 
   types: {
@@ -117,6 +130,7 @@ export default {
     APPEND_CHILD,
     REPLACE_CHILD,
     REMOVE_CHILD,
+    INSERT_BEFORE,
     RENDER_THUNK
   }
 }

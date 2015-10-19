@@ -8,6 +8,7 @@ import isText from './util/isText'
 import forEach from './util/forEach'
 import actions from './actions'
 import _create from './create'
+import keyDiff from 'key-diff'
 
 /**
  * Diff and render two vnode trees
@@ -22,6 +23,7 @@ function update (effect) {
     replaceChild,
     appendChild,
     removeChild,
+    insertBefore,
     renderThunk
   } = composeAll(effect, actions)
 
@@ -99,26 +101,29 @@ function update (effect) {
      * Diff children
      */
 
-    const nchildren = next.children
-    const pchildren = prev.children
-    const prevLen = pchildren.length
-    const nextLen = nchildren.length
+    keyDiff(prev.children, next.children, ({type, prev, next, pos}) => {
+      switch (type) {
+        case keyDiff.CREATE:
+          const oldChild = node.childNodes[pos]
+          const newChild = create(next.item)
 
-    for (let i = 0; i < nextLen; i++) {
-      if (i >= prevLen) {
-        appendChild(node, create(nchildren[i]))
-      } else {
-        updateRecursive(pchildren[i], nchildren[i], node.childNodes[i])
+          if (oldChild) insertBefore(node, newChild, oldChild)
+          else appendChild(node, newChild)
+          break
+        case keyDiff.REMOVE:
+          removeChild(node, node.childNodes[prev.idx])
+          break
+        case keyDiff.MOVE:
+          const child = node.childNodes[prev.idx]
+          updateRecursive(prev.item, next.item, child)
+          removeChild(node, child)
+          insertBefore(node, child, node.childNodes[pos])
+          break
+        case keyDiff.UPDATE:
+          updateRecursive(prev.item, next.item, node.childNodes[next.idx])
+          break
       }
-    }
-
-    if (nextLen < prevLen) {
-      // Remove nodes starting at the end so that the
-      // index doesn't shift on us as we go
-      for (let i = nextLen; i < prevLen; i++) {
-        removeChild(node, node.lastChild)
-      }
-    }
+    })
 
     return node
   }
