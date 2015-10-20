@@ -10,7 +10,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "key-diff": "git://github.com/joshrtay/key-diff"
+    "key-diff": "^0.1.5"
   },
   "devDependencies": {
     "babel": "^5.8.21",

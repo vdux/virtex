@@ -105,31 +105,33 @@ function update (effect) {
      * Diff children
      */
 
-    keyDiff(prev.children, next.children, ({type, prev, next, pos}) => {
+    keyDiff(prev.children, next.children, (type, prev, next, pos) => {
       switch (type) {
         case keyDiff.CREATE:
-          const oldChild = node.childNodes[pos]
-          const newChild = create(next.item)
-
-          if (oldChild) insertBefore(node, newChild, oldChild)
-          else appendChild(node, newChild)
+          insertBefore(node, create(next), node.childNodes[pos] || null)
           break
         case keyDiff.REMOVE:
-          removeChild(node, nativeElement(prev.item))
+          removeChild(node, nativeElement(prev))
           break
         case keyDiff.MOVE:
-          updateRecursive(prev.item, next.item, nativeElement(prev.item))
-          removeChild(node, child)
-          insertBefore(node, child, node.childNodes[pos])
+          const oldNode = nativeElement(prev)
+          updateRecursive(prev, next, oldNode)
+          insertBefore(node, nativeElement(next), node.childNodes[pos] || null)
           break
         case keyDiff.UPDATE:
-          updateRecursive(prev.item, next.item, nativeElement(prev.item))
+          updateRecursive(prev, next, nativeElement(prev))
           break
       }
-    })
+    }, isSameVnode)
 
     return node
   }
+}
+
+function isSameVnode (a, b) {
+  const aKey = a.item.attrs && a.item.attrs.key
+  const bKey = b.item.attrs && b.item.attrs.key
+  return aKey === bKey
 }
 
 function nativeElement (vnode) {
