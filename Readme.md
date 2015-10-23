@@ -3,7 +3,21 @@
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
-Small, focused virtual dom library.  Right now this is an experiment to try to create a simple virtual dom library that can be extended in interesting ways by allowing the calling code to reinterpret thunks via its `reify` option.  This should enable things like pure local state trees that look and feel like React's component local state, while still allowing you to keep your state in some external state atom, and your rendering tree to be completely pure.
+Small, focused virtual dom library.  Right now this is an experiment to try to create a simple virtual dom library that can be extended in interesting ways by allowing the calling code to reinterpret all side-effects (thunk rendering & DOM manipulation at the moment) via an action dispatcher.
+
+## Usage
+
+```javascript
+const {create, update} = virtex(dispatch)
+
+let tree = render(state)
+const node = create(tree)
+
+// ... on state update ...
+
+update()
+
+```
 
 ## Installation
 

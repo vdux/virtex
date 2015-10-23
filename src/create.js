@@ -13,7 +13,7 @@ import map from './util/map'
  */
 
 function create (effect) {
-  const {appendChild, setAttribute, createElement, renderThunk, createTextNode}
+  const {setAttribute, createElement, renderThunk, createTextNode}
     = composeAll(effect, actions)
 
   return function createRecursive (vnode) {

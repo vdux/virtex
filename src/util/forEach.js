@@ -3,6 +3,8 @@
  */
 
 function forEach (obj, fn) {
+  if (!obj) return
+
   const keys = Object.keys(obj)
 
   for (let i = 0, len = keys.length; i < len; i++) {

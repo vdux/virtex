@@ -2,7 +2,7 @@
  * Thunkify
  */
 
-function thunkify (component, props, children) {
+function thunkify (component, props, children, key) {
   if (typeof component === 'function') {
     component = {render: component}
   }
@@ -13,7 +13,8 @@ function thunkify (component, props, children) {
   return {
     type: 'Thunk',
     props,
-    component
+    component,
+    key
   }
 }
 

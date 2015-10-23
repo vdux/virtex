@@ -8,7 +8,7 @@ import isText from './util/isText'
 import forEach from './util/forEach'
 import actions from './actions'
 import _create from './create'
-import keyDiff from 'key-diff'
+import keyDiff, {CREATE, REMOVE, MOVE, UPDATE} from 'key-diff'
 
 /**
  * Diff and render two vnode trees
@@ -21,14 +21,14 @@ function update (effect) {
     setAttribute,
     removeAttribute,
     replaceChild,
-    appendChild,
     removeChild,
     insertBefore,
     renderThunk
   } = composeAll(effect, actions)
 
+  return updateRecursive
 
-  return function updateRecursive (prev, next, node) {
+  function updateRecursive (prev, next, node) {
 
     /**
      * Render thunks if necessary
@@ -56,7 +56,7 @@ function update (effect) {
         replaceChild(node.parentNode, newNode, node)
         return newNode
       }
-    } else if (isText(next) || !prev || prev.tag !== next.tag) {
+    } else if (isText(next) || prev.tag !== next.tag) {
       const newNode = create(next)
       replaceChild(node.parentNode, newNode, node)
       return newNode
@@ -69,69 +69,45 @@ function update (effect) {
     const pattrs = prev.attrs
     const nattrs = next.attrs
 
-    if (pattrs && !nattrs) {
-      forEach(pattrs, (val, key) => removeAttribute(node, key))
-    } else if (!pattrs && nattrs) {
-      forEach(nattrs, (val, key) => setAttribute(node, key, val))
-    } else if (pattrs && nattrs) {
-      const cache = {}
-      const pkeys = Object.keys(pattrs)
-      const nkeys = Object.keys(nattrs)
-      const len = Math.max(pkeys.length, nkeys.length)
-
-      for (let i = 0; i < len; i++) {
-        const p = pkeys[i]
-        const n = nkeys[i]
-
-        if (n !== undefined && !cache[n]) {
-          cache[n] = true
-          if (!pattrs.hasOwnProperty(n) || nattrs[n] !== pattrs[n]) {
-            setAttribute(node, n, nattrs[n])
-          }
-        }
-
-        if (p !== undefined && !cache[p]) {
-          cache[p] = true
-          if (!nattrs.hasOwnProperty(p)) {
-            removeAttribute(node, p)
-          } else if (nattrs[p] !== pattrs[p]) {
-            setAttribute(node, p, nattrs[p])
-          }
-        }
+    forEach(pattrs, (val, key) => {
+      if (!nattrs || !(key in nattrs)) {
+        removeAttribute(node, key)
       }
-    }
+    })
+
+    forEach(nattrs, (val, key) => {
+      if (!pattrs || !(key in pattrs) || val !== pattrs[key]) {
+        setAttribute(node, key, val)
+      }
+    })
 
     /**
      * Diff children
      */
 
-    keyDiff(prev.children, next.children, (type, prev, next, pos) => {
-      switch (type) {
-        case keyDiff.CREATE:
-          insertBefore(node, create(next), node.childNodes[pos] || null)
-          break
-        case keyDiff.REMOVE:
-          removeChild(node, nativeElement(prev))
-          break
-        case keyDiff.MOVE:
-          const oldNode = nativeElement(prev)
-          updateRecursive(prev, next, oldNode)
-          insertBefore(node, nativeElement(next), node.childNodes[pos] || null)
-          break
-        case keyDiff.UPDATE:
-          updateRecursive(prev, next, nativeElement(prev))
-          break
-      }
-    }, isSameVnode)
-
+    keyDiff(prev.children, next.children, diffChild(node))
     return node
   }
-}
 
-function isSameVnode (a, b) {
-  const aKey = a.item.attrs && a.item.attrs.key
-  const bKey = b.item.attrs && b.item.attrs.key
-  return aKey === bKey
+  function diffChild (node) {
+    const childNodes = node
+    return function (type, prev, next, pos) {
+      switch (type) {
+        case CREATE:
+          insertBefore(node, create(next), childNodes[pos] || null)
+          break
+        case UPDATE:
+          updateRecursive(prev, next, nativeElement(prev))
+          break
+        case MOVE:
+          insertBefore(node, updateRecursive(prev, next, nativeElement(prev)), childNodes[pos] || null)
+          break
+        case REMOVE:
+          removeChild(node, nativeElement(prev))
+          break
+      }
+    }
+  }
 }
 
 function nativeElement (vnode) {
