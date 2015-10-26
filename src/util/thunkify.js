@@ -11,7 +11,7 @@ function thunkify (component, props, children, key) {
   props.children = children
 
   return {
-    type: 'Thunk',
+    thunk: true,
     props,
     component,
     key

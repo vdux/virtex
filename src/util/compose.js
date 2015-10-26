@@ -3,15 +3,14 @@
  */
 
 import forEach from './forEach'
-import apply from './fastApply'
 
 /**
  * Compose functions
  */
 
 function compose (a, b) {
-  return function () {
-    return a(b.apply(null, arguments))
+  return function innerCompose (c, d, e) {
+    return a(b(c, d ,e))
   }
 }
 

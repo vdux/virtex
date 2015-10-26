@@ -18,14 +18,14 @@ const RENDER_THUNK = 'RENDER_THUNK'
 
 function createTextNode (text) {
   return {
-    type: 'CREATE_TEXT_NODE',
+    type: CREATE_TEXT_NODE,
     text
   }
 }
 
 function createElement (tag, attrs, children) {
   return {
-    type: 'CREATE_ELEMENT',
+    type: CREATE_ELEMENT,
     tag,
     attrs,
     children
@@ -34,7 +34,7 @@ function createElement (tag, attrs, children) {
 
 function setAttribute (node, name, value) {
   return {
-    type: 'SET_ATTRIBUTE',
+    type: SET_ATTRIBUTE,
     node,
     name,
     value
@@ -43,7 +43,7 @@ function setAttribute (node, name, value) {
 
 function removeAttribute (node, name) {
   return {
-    type: 'REMOVE_ATTRIBUTE',
+    type: REMOVE_ATTRIBUTE,
     node,
     name
   }
@@ -51,7 +51,7 @@ function removeAttribute (node, name) {
 
 function appendChild (node, childNode) {
   return {
-    type: 'APPEND_CHILD',
+    type: APPEND_CHILD,
     node,
     childNode
   }
@@ -59,7 +59,7 @@ function appendChild (node, childNode) {
 
 function replaceChild (node, newChild, oldChild) {
   return {
-    type: 'REPLACE_CHILD',
+    type: REPLACE_CHILD,
     node,
     newChild,
     oldChild
@@ -68,7 +68,7 @@ function replaceChild (node, newChild, oldChild) {
 
 function removeChild (node, childNode) {
   return {
-    type: 'REMOVE_CHILD',
+    type: REMOVE_CHILD,
     node,
     childNode
   }
@@ -76,7 +76,7 @@ function removeChild (node, childNode) {
 
 function insertBefore (node, newChild, oldChild) {
   return {
-    type: 'INSERT_BEFORE',
+    type: INSERT_BEFORE,
     node,
     newChild,
     oldChild
@@ -85,7 +85,7 @@ function insertBefore (node, newChild, oldChild) {
 
 function renderThunk (thunk, prev) {
   return {
-    type: 'RENDER_THUNK',
+    type: RENDER_THUNK,
     thunk,
     prev
   }

@@ -1,4 +1,5 @@
 {
   "optional": ["es7.objectRestSpread"],
+  "loose": "all",
   "jsxPragma": "element"
 }

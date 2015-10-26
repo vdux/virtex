@@ -6,8 +6,8 @@ function map (arr, fn) {
   const len = arr.length
   const result = new Array(len)
 
-  for (let i = 0; i < len; i++) {
-    result[i] = fn(arr[i], i)
+  for (let i = 0; i < len; ++i) {
+    result[i] = fn(arr[i])
   }
 
   return result

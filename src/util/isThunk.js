@@ -3,7 +3,7 @@
  */
 
 function isThunk (a) {
-  return a && a.type === 'Thunk'
+  return typeof a.thunk !== 'undefined'
 }
 
 /**

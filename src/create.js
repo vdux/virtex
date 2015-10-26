@@ -13,11 +13,12 @@ import map from './util/map'
  */
 
 function create (effect) {
-  const {setAttribute, createElement, renderThunk, createTextNode}
-    = composeAll(effect, actions)
+  const {createElement, renderThunk, createTextNode} = composeAll(effect, actions)
 
   return function createRecursive (vnode) {
-    if (isThunk(vnode)) vnode = renderThunk(vnode)
+    if (isThunk(vnode)) {
+      vnode = renderThunk(vnode)
+    }
 
     const node = isText(vnode)
       ? createTextNode(vnode.value)

@@ -12,7 +12,7 @@ function element (tag, attrs, ...children) {
   children = filterFlatten(children, children, 0, 0)
   let key
 
-  if (attrs !== null && attrs.hasOwnProperty('key')) {
+  if (attrs !== null && typeof attrs.key !== 'undefined') {
     key = attrs.key
     attrs.key = null
     if (!hasMoreKeysThan(attrs, 1)) {
@@ -31,7 +31,7 @@ function element (tag, attrs, ...children) {
     children,
     // Add this property now so that we avoid mutating the keylist later,
     // which can cause de-optimization
-    element: undefined
+    element: null
   }
 }
 
@@ -39,7 +39,7 @@ function hasMoreKeysThan (obj, n) {
   let i = 0
 
   for (let k in obj) {
-    i++
+    ++i
     if (i > n) return true
   }
 
@@ -55,28 +55,32 @@ function filterFlatten (items, arr, arrStart) {
   const len = items.length
   let remove = 0
 
-  for (let i = 0, j = arrStart; i < len; i++, j++) {
+  for (let i = 0, j = arrStart; i < len; ++i, ++j) {
     const item = items[i]
 
-    if (Array.isArray(item)) {
-      const delta = item.length - 1
-      if (delta !== -1) {
-        arr.length += delta
-        filterFlatten(item, arr, j)
-        j += delta
-      } else {
-        // Account for the possibility that 'item'
-        // is an empty array
+    switch (type(item)) {
+      case 'array':
+        const delta = item.length - 1
+        if (delta !== -1) {
+          filterFlatten(item, arr, j)
+          j += delta
+        } else {
+          j--
+          remove++
+        }
+        break
+      case 'undefined':
+      case 'null':
         j--
         remove++
-      }
-    } else if (item === undefined || item === null) {
-      j--
-      remove++
-    } else if (typeof item === 'string' || typeof item === 'number') {
-      arr[j] = {type: 'text', value: item}
-    } else {
-      arr[j] = item
+        break
+      case 'string':
+      case 'number':
+        arr[j] = {text: true, value: item}
+        break
+      default:
+        arr[j] = item
+        break
     }
   }
 
@@ -85,6 +89,12 @@ function filterFlatten (items, arr, arrStart) {
   }
 
   return arr
+}
+
+function type (val) {
+  if (val === null) return 'null'
+  if (Array.isArray(val)) return 'array'
+  return typeof val
 }
 
 /**
