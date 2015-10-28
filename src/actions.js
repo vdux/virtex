@@ -45,15 +45,17 @@ function removeAttribute (node, name) {
   return {
     type: REMOVE_ATTRIBUTE,
     node,
-    name
+    name,
+    value: null
   }
 }
 
-function appendChild (node, childNode) {
+function appendChild (node, newChild) {
   return {
     type: APPEND_CHILD,
     node,
-    childNode
+    oldChild: null,
+    newChild
   }
 }
 
@@ -61,16 +63,17 @@ function replaceChild (node, newChild, oldChild) {
   return {
     type: REPLACE_CHILD,
     node,
-    newChild,
-    oldChild
+    oldChild,
+    newChild
   }
 }
 
-function removeChild (node, childNode) {
+function removeChild (node, oldChild) {
   return {
     type: REMOVE_CHILD,
     node,
-    childNode
+    oldChild,
+    newChild: null
   }
 }
 

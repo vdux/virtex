@@ -2,10 +2,9 @@
  * Imports
  */
 
-import {composeAll} from './util/compose'
 import isThunk from './util/isThunk'
 import isText from './util/isText'
-import actions from './actions'
+import {createElement, createTextNode, renderThunk} from './actions'
 import map from './util/map'
 
 /**
@@ -13,19 +12,14 @@ import map from './util/map'
  */
 
 function create (effect) {
-  const {createElement, renderThunk, createTextNode} = composeAll(effect, actions)
-
   return function createRecursive (vnode) {
     if (isThunk(vnode)) {
-      vnode = renderThunk(vnode)
+      vnode = effect(renderThunk(vnode))
     }
 
-    const node = isText(vnode)
-      ? createTextNode(vnode.value)
-      : createElement(vnode.tag, vnode.attrs, map(vnode.children, createRecursive))
-
-    vnode.element = node
-    return node
+    return (vnode.el = isText(vnode)
+      ? effect(createTextNode(vnode.text))
+      : effect(createElement(vnode.tag, vnode.attrs, map(vnode.children, createRecursive))))
   }
 }
 

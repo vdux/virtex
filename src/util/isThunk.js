@@ -2,8 +2,8 @@
  * Check if something is a thunk
  */
 
-function isThunk (a) {
-  return typeof a.thunk !== 'undefined'
+function isThunk (vnode) {
+  return typeof vnode.thunk !== 'undefined'
 }
 
 /**

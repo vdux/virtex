@@ -21,17 +21,14 @@ function element (tag, attrs, ...children) {
   }
 
   if (typeof tag !== 'string') {
-    return thunkify(tag, attrs, children)
+    return thunkify(tag, attrs, children, key)
   }
 
   return {
     key,
     tag,
     attrs,
-    children,
-    // Add this property now so that we avoid mutating the keylist later,
-    // which can cause de-optimization
-    element: null
+    children
   }
 }
 
@@ -76,7 +73,7 @@ function filterFlatten (items, arr, arrStart) {
         break
       case 'string':
       case 'number':
-        arr[j] = {text: true, value: item}
+        arr[j] = {text: item}
         break
       default:
         arr[j] = item

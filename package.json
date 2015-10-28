@@ -10,7 +10,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
-    "key-diff": "^0.1.10"
+    "dift": "^0.1.2"
   },
   "devDependencies": {
     "babel": "^5.8.21",

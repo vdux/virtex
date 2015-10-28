@@ -23,6 +23,10 @@ update()
 
     $ npm install virtex
 
+## Performance
+
+Virtex is not the fastest, but it's pretty fast.  6-7x faster than React, and about on par with [snabbdom](https://github.com/paldepind/snabbdom)/[deku](https://github.com/dekujs/deku).  Here's the [vdom-benchmark](https://github.com/ashaffer/vdom-benchmark-virtex).
+
 ## License
 
 The MIT License
