@@ -26,6 +26,7 @@
     "tape": "^4.2.0",
     "trigger-event": "^1.0.2",
     "vdux": "^0.1.8",
-    "virtex-component": "^0.1.1"
+    "virtex-component": "^0.1.1",
+    "virtex-string": "^0.1.0"
   }
 }
