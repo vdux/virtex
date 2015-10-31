@@ -12,14 +12,15 @@ import map from './util/map'
  */
 
 function create (effect) {
-  return function createRecursive (vnode) {
+  return function createRecursive (vnode, path = '') {
     if (isThunk(vnode)) {
+      vnode.key = vnode.key || path
       vnode = effect(renderThunk(vnode))
     }
 
     return (vnode.el = isText(vnode)
       ? effect(createTextNode(vnode.text))
-      : effect(createElement(vnode.tag, vnode.attrs, map(vnode.children, createRecursive))))
+      : effect(createElement(vnode.tag, vnode.attrs, map(vnode.children, (child, i) => createRecursive(child, path + '.' + i)))))
   }
 }
 

@@ -7,7 +7,7 @@ function map (arr, fn) {
   const result = new Array(len)
 
   for (let i = 0; i < len; ++i) {
-    result[i] = fn(arr[i])
+    result[i] = fn(arr[i], i)
   }
 
   return result

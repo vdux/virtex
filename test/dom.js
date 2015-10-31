@@ -274,6 +274,7 @@ test('input attributes', ({equal,notEqual,end,ok,test,comment}) => {
   ok(checkbox.checked, 'checked with a true value')
   equal(checkbox.getAttribute('checked'), null, 'has checked attribute')
   mount(<input checked={false} />)
+
   ok(!checkbox.checked, 'unchecked with a false value')
   ok(!checkbox.hasAttribute('checked'), 'has no checked attribute')
   mount(<input checked />)
@@ -481,6 +482,7 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
 
   mount(<MyComponent />)
   teardown({renderer,el})
+  end()
 })
 
 test('replace props instead of merging', ({equal,end}) => {
@@ -591,52 +593,6 @@ test('skipping updates when the same virtual element is returned', ({equal,end,f
   end()
 })
 
-test('should empty the container before initial render', assert => {
-  var el = div()
-  el.innerHTML = '<div>a</div>'
-  var app = deku(<div>b</div>)
-  var renderer = render(app, el)
-  assert.equal(el.innerHTML, '<div>b</div>', 'container was emptied')
-  renderer.remove()
-  assert.end()
-})
-
-test.skip('unmount sub-components that move themselves in the DOM', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
-  var arr = []
-
-  var Overlay = {
-    beforeUnmount: function(){
-      arr.push('A')
-    },
-    render: function(){
-      return <div class='Overlay' onMount={ el => document.body.appendChild(el) } />
-    }
-  }
-
-  var Parent = {
-    render: (props) => {
-      if (props.show) {
-        return (
-          <div>
-            <Overlay />
-          </div>
-        )
-      } else {
-        return <div />
-      }
-    }
-  }
-
-  mount(<Parent show={true} />)
-  var overlay = document.querySelector('.Overlay')
-  equal(overlay.parentElement, document.body, 'element was moved in the DOM')
-  mount(<Parent show={false} />)
-  equal(arr[0], 'A', 'unmount was called')
-  teardown({renderer,el})
-  end()
-})
-
 test('firing mount events on sub-components created later', ({equal,pass,end,plan}) => {
   var {mount,renderer,el} = setup(equal)
 
@@ -650,7 +606,6 @@ test('firing mount events on sub-components created later', ({equal,pass,end,pla
   mount(<ComponentA />)
   mount(<div />)
   teardown({renderer,el})
-  end()
 })
 
 test('should change root node and still update correctly', ({equal,end}) => {
@@ -975,28 +930,6 @@ test('updating event handlers when children are removed', ({equal,end}) => {
   end()
 })
 
-// Let's run this test only if the browser supports shadow DOM
-if (document.body.createShadowRoot) {
-  test('change the root listener node so we can render into document fragments', ({equal,end}) => {
-    var Button = {
-      render: props => {
-        return dom('button', { onClick: () => end() })
-      }
-    }
-
-    var host = document.createElement('div')
-    var shadow = host.createShadowRoot()
-    shadow.innerHTML = '<div></div>'
-    var mountNode = shadow.querySelector('div')
-
-    document.body.appendChild(host)
-
-    var app = deku(<Button />)
-    var renderer = render(app, mountNode, { batching: false })
-    var button = shadow.querySelector('button')
-    trigger(button, 'click')
-
-    renderer.remove()
-    document.body.removeChild(host)
-  })
-}
+test('components should receive path based keys if they are not specified', t => {
+  t.end()
+})
