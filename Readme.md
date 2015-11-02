@@ -7,17 +7,42 @@ Small, focused virtual dom library.  Right now this is an experiment to try to c
 
 ## Usage
 
-```javascript
-const {create, update} = virtex(dispatch)
+virtex consists of two functions `create` and `update`, curried with an effect processor.  You initialize them like this:
 
-let tree = render(state)
+`const {create, update} = virtex(effect)`
+
+  * `create(tree)` - takes a virtual node tree and returns a DOM element
+  * `update(oldTree, newTree, node)` - takes the previous vnode tree and the new vnode tree and renders them into `node`
+  * `effect(action)` - handle all effectful actions (DOM manipulation and thunk rendering, for the time being)
+
+## Example
+
+```javascript
+import dom from 'virtex-dom'
+import virtex from 'virtex'
+import {createStore, applyMiddleware} from 'redux'
+import app from './app'
+
+const store = applyMiddleware(dom(document))(createStore)(() => {}, {})
+const {create, update} = virtex(store.dispatch)
+
+let tree = app(store.getState())
 const node = create(tree)
 
-// ... on state update ...
+document.body.appendChild(node)
 
-update()
+store.subscribe(() => {
+  const state = store.getState()
+  const newTree = app(state)
 
+  update(tree, newTree, node)
+  tree = newTree
+})
 ```
+
+## Processing effects
+
+Your effect processor receives an action object, with at least 1 field: `type`.  The other object properties are type specific.  More documentation to be added here soon.
 
 ## Installation
 
