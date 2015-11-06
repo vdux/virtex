@@ -11,6 +11,7 @@ const REMOVE_CHILD = 'REMOVE_CHILD'
 const REPLACE_CHILD = 'REPLACE_CHILD'
 const INSERT_BEFORE = 'INSERT_BEFORE'
 const RENDER_THUNK = 'RENDER_THUNK'
+const UNRENDER_THUNK = 'UNRENDER_THUNK'
 
 /**
  * Action creators for effectful things
@@ -94,6 +95,13 @@ function renderThunk (thunk, prev) {
   }
 }
 
+function unrenderThunk (thunk) {
+  return {
+    type: UNRENDER_THUNK,
+    thunk
+  }
+}
+
 /**
  * Exports
  */
@@ -108,6 +116,7 @@ export default {
   replaceChild,
   insertBefore,
   renderThunk,
+  unrenderThunk,
 
   types: {
     CREATE_TEXT_NODE,
@@ -118,6 +127,7 @@ export default {
     REPLACE_CHILD,
     REMOVE_CHILD,
     INSERT_BEFORE,
-    RENDER_THUNK
+    RENDER_THUNK,
+    UNRENDER_THUNK
   }
 }

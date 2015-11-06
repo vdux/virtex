@@ -9,14 +9,15 @@ import thunkify from './util/thunkify'
  */
 
 function element (tag, attrs, ...children) {
-  children = filterFlatten(children, children, 0, 0)
+  children = filterFlatten(children, children, 0)
   let key
 
   if (attrs !== null && typeof attrs.key !== 'undefined') {
     key = attrs.key
-    attrs.key = null
     if (!hasMoreKeysThan(attrs, 1)) {
       attrs = null
+    } else {
+      attrs.key = null
     }
   }
 

@@ -10,6 +10,7 @@ import test from 'tape'
 import {createStore, applyMiddleware} from 'redux'
 import dom from 'virtex-dom'
 import component from 'virtex-component'
+import delegant from 'delegant'
 
 /**
  * Setup store
@@ -40,11 +41,13 @@ function div () {
 
 function setup (equal) {
   const el = div()
+
+  delegant(el)
   let tree
   let node
   return {
     mount (vnode) {
-      if (tree) node = update(tree, vnode, node)
+      if (tree) node = update(tree, vnode)
       else {
         node = create(vnode)
         el.appendChild(node)
@@ -58,7 +61,12 @@ function setup (equal) {
     },
     renderer: {
       remove () {
-        node.parentNode.removeChild(node)
+        const newTree = {children: []}
+        const parentNode = node.parentNode
+        update(tree, newTree)
+        parentNode.removeChild(parentNode.firstChild)
+        tree = newTree
+        // node.parentNode.removeChild(node)
         tree = null
       }
     },
@@ -373,11 +381,11 @@ test.skip('nested root components should not have an element', ({deepEqual,mount
   end()
 })
 
-test('nested component lifecycle hooks fire in the correct order', ({deepEqual,mount,end,equal}) => {
-  var {el,renderer,mount} = setup(equal)
-  var log = []
+test('nested component lifecycle hooks fire in the correct order', t => {
+  const {el,renderer,mount} = setup(t.equal)
+  let log = []
 
-  var LifecycleLogger = {
+  const LifecycleLogger = {
     render (props) {
       log.push(props.name + ' render')
       return <div>{props.children}</div>
@@ -387,6 +395,9 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     },
     beforeUnmount (props) {
       log.push(props.name + ' beforeUnmount')
+    },
+    shouldUpdate () {
+      return true
     }
   }
 
@@ -400,7 +411,7 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     </Wrapper>
   )
 
-  deepEqual(log, [
+  t.deepEqual(log, [
     'GrandParent render',
     'Parent render',
     'Child render',
@@ -420,19 +431,16 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     </Wrapper>
   )
 
-  deepEqual(log, [
-    'GrandParent validate',
+  t.deepEqual(log, [
     'GrandParent render',
-    'Parent validate',
     'Parent render',
-    'Child validate',
     'Child render',
   ], 'updated')
   log = []
 
   mount(<Wrapper></Wrapper>)
 
-  deepEqual(log, [
+  t.deepEqual(log, [
     'GrandParent beforeUnmount',
     'Parent beforeUnmount',
     'Child beforeUnmount'
@@ -449,65 +457,67 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
   )
   log = []
 
-  teardown({renderer,el})
+  teardown({renderer, el})
 
-  deepEqual(log, [
+  t.deepEqual(log, [
     'GrandParent beforeUnmount',
     'Parent beforeUnmount',
     'Child beforeUnmount'
   ], 'unmounted with renderer.remove()')
 
-  end()
+  t.end()
 })
 
-test('component lifecycle hook signatures', ({ok,end,equal}) => {
-  var {mount,renderer,el} = setup(equal)
+test('component lifecycle hook signatures', t => {
+  var {mount,renderer,el} = setup(t.equal)
 
   var MyComponent = {
     validate (props) {
-      ok(props, 'validate has props')
+      t.ok(props, 'validate has props')
     },
     render (props) {
-      ok(props, 'render has props')
+      t.ok(props, 'render has props')
       return <div id="foo" />
     },
     afterMount (props) {
-      ok(props, 'afterMount has props')
+      t.ok(props, 'afterMount has props')
     },
     beforeUnmount (props) {
-      ok(props, 'beforeUnmount has props')
-      end()
+      t.ok(props, 'beforeUnmount has props')
+      t.end()
     }
   }
 
   mount(<MyComponent />)
   teardown({renderer,el})
-  end()
 })
 
-test('replace props instead of merging', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
+test('replace props instead of merging', t => {
+  const {mount, renderer, el} = setup(t.equal)
   mount(<TwoWords one="Hello" two="World" />)
   mount(<TwoWords two="Pluto" />)
-  equal(el.innerHTML, '<span> Pluto</span>')
+  t.equal(el.innerHTML, '<span> Pluto</span>')
   teardown({renderer,el})
-  end()
+  t.end()
 })
 
-test(`should update all children when a parent component changes`, ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
-  var parentCalls = 0
-  var childCalls = 0
+test(`should update all children when a parent component changes`, t => {
+  const {mount, renderer, el} = setup(t.equal)
+  let parentCalls = 0
+  let childCalls = 0
 
-  var Child = {
-    render: function(props){
+  const Child = {
+    render (props) {
       childCalls++
       return <span>{props.text}</span>
+    },
+    shouldUpdate () {
+      return true
     }
   }
 
-  var Parent = {
-    render: function(props){
+  const Parent = {
+    render (props) {
       parentCalls++
       return (
         <div name={props.character}>
@@ -519,10 +529,10 @@ test(`should update all children when a parent component changes`, ({equal,end})
 
   mount(<Parent character="Link" />)
   mount(<Parent character="Zelda" />)
-  equal(childCalls, 2, 'child rendered twice')
-  equal(parentCalls, 2, 'parent rendered twice')
-  teardown({renderer,el})
-  end()
+  t.equal(childCalls, 2, 'child rendered twice')
+  t.equal(parentCalls, 2, 'parent rendered twice')
+  teardown({renderer, el})
+  t.end()
 })
 
 test.skip('batched rendering', assert => {
@@ -593,28 +603,28 @@ test('skipping updates when the same virtual element is returned', ({equal,end,f
   end()
 })
 
-test('firing mount events on sub-components created later', ({equal,pass,end,plan}) => {
-  var {mount,renderer,el} = setup(equal)
+test('firing mount events on sub-components created later', t => {
+  var {mount,renderer,el} = setup(t.equal)
 
   var ComponentA = {
     render: () => <div />,
-    beforeUnmount: () => pass('beforeUnmount called'),
-    afterMount: () => pass('afterMount called')
+    beforeUnmount: () => t.pass('beforeUnmount called'),
+    afterMount: () => t.pass('afterMount called')
   }
 
-  plan(2)
+  t.plan(2)
   mount(<ComponentA />)
   mount(<div />)
-  teardown({renderer,el})
+  teardown({renderer, el})
 })
 
-test('should change root node and still update correctly', ({equal,end}) => {
-  var {mount,html,renderer,el} = setup(equal)
+test('should change root node and still update correctly', t => {
+  const {mount, html, renderer, el} = setup(t.equal)
 
-  var ComponentA = props =>
-    dom(props.type, null, props.text)
+  const ComponentA = props =>
+    element(props.type, null, props.text)
 
-  var Test = props =>
+  const Test = props =>
     <ComponentA type={props.type} text={props.text} />
 
   mount(<Test type="span" text="test" />)
@@ -623,16 +633,16 @@ test('should change root node and still update correctly', ({equal,end}) => {
   html('<div>test</div>')
   mount(<Test type="div" text="foo" />)
   html('<div>foo</div>')
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('replacing components with other components', ({equal,end}) => {
-  var {mount,renderer,el,html} = setup(equal)
-  var ComponentA = () => <div>A</div>
-  var ComponentB = () => <div>B</div>
+test('replacing components with other components', t => {
+  const {mount, renderer, el, html} = setup(t.equal)
+  const ComponentA = () => <div>A</div>
+  const ComponentB = () => <div>B</div>
 
-  var ComponentC = (props) => {
+  const ComponentC = (props) => {
     if (props.type === 'A') {
       return <ComponentA />
     } else {
@@ -644,8 +654,8 @@ test('replacing components with other components', ({equal,end}) => {
   html('<div>A</div>')
   mount(<ComponentC type="B" />)
   html('<div>B</div>')
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
 test('adding, removing and updating events', ({equal,end}) => {
@@ -685,6 +695,9 @@ test('should bubble events', ({equal,end,fail,ok}) => {
           </div>
         </div>
       )
+    },
+    shouldUpdate () {
+      return true
     }
   }
 
@@ -768,18 +781,22 @@ test('update sub-components with the same element', ({equal,end}) => {
   end()
 })
 
-test('replace elements with component nodes', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
+test('replace elements with component nodes', t => {
+  const {mount, renderer, el} = setup(t.equal)
+
   mount(<span/>)
-  equal(el.innerHTML, '<span></span>', 'rendered element')
+  t.equal(el.innerHTML, '<span></span>', 'rendered element')
+
   mount(<Wrapper>component</Wrapper>)
-  equal(el.innerHTML, '<div>component</div>', 'replaced with component')
-  teardown({renderer,el})
-  end()
+  t.equal(el.innerHTML, '<div>component</div>', 'replaced with component')
+
+  teardown({renderer, el})
+  t.end()
 })
 
-test('svg elements', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
+test('svg elements', t => {
+  const {mount, renderer, el} = setup(t.equal)
+
   mount(
     <svg width="92px" height="92px" viewBox="0 0 92 92">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -787,16 +804,17 @@ test('svg elements', ({equal,end}) => {
       </g>
     </svg>
   )
-  equal(el.firstChild.tagName, 'svg', 'rendered svg element')
-  teardown({renderer,el})
-  end()
+  t.equal(el.firstChild.tagName, 'svg', 'rendered svg element')
+
+  teardown({renderer, el})
+  t.end()
 })
 
-test('moving components with keys', ({equal,end,ok,pass,plan}) => {
-  var {mount,renderer,el} = setup(equal)
-  var one,two,three
+test('moving components with keys', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  let one, two, three
 
-  plan(10)
+  t.plan(10)
 
   mount(
     <ul>
@@ -804,7 +822,7 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
       <ListItem key="bar">Two</ListItem>
     </ul>
   )
-  var [one,two] = el.querySelectorAll('li')
+  ;[one, two] = el.querySelectorAll('li')
 
   // Moving
   mount(
@@ -813,9 +831,10 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
       <ListItem key="foo">One</ListItem>
     </ul>
   )
-  var updated = el.querySelectorAll('li')
-  ok(updated[1] === one, 'foo moved down')
-  ok(updated[0] === two, 'bar moved up')
+
+  let updated = el.querySelectorAll('li')
+  t.ok(updated[1] === one, 'foo moved down')
+  t.ok(updated[0] === two, 'bar moved up')
 
   // Removing
   mount(
@@ -824,7 +843,7 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
     </ul>
   )
   updated = el.querySelectorAll('li')
-  ok(updated[0] === two && updated.length === 1, 'foo was removed')
+  t.ok(updated[0] === two && updated.length === 1, 'foo was removed')
 
   // Updating
   mount(
@@ -834,19 +853,19 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
       <ListItem key="baz">Three</ListItem>
     </ul>
   )
-  var [one,two,three] = el.querySelectorAll('li')
+
+  ;[one,two,three] = el.querySelectorAll('li')
   mount(
     <ul>
       <ListItem key="foo">One</ListItem>
       <ListItem key="baz">Four</ListItem>
     </ul>
   )
-  var updated = el.querySelectorAll('li')
-  ok(updated[0] === one, 'foo is the same')
-  ok(updated[1] === three, 'baz is the same')
-  ok(updated[1].innerHTML === 'Four', 'baz was updated')
-  var foo = updated[0]
-  var baz = updated[1]
+  updated = el.querySelectorAll('li')
+  t.ok(updated[0] === one, 'foo is the same')
+  t.ok(updated[1] === three, 'baz is the same')
+  t.ok(updated[1].innerHTML === 'Four', 'baz was updated')
+  let [foo, baz] = updated
 
   // Adding
   mount(
@@ -856,13 +875,13 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
       <ListItem key="baz">Four</ListItem>
     </ul>
   )
-  var updated = el.querySelectorAll('li')
-  ok(updated[0] === foo, 'foo is the same')
-  ok(updated[2] === baz, 'baz is the same')
-  ok(updated[1].innerHTML === 'Five', 'bar was added')
+  updated = el.querySelectorAll('li')
+  t.ok(updated[0] === foo, 'foo is the same')
+  t.ok(updated[2] === baz, 'baz is the same')
+  t.ok(updated[1].innerHTML === 'Five', 'bar was added')
 
   // Moving event handlers
-  var clicked = () => pass('event handler moved')
+  const clicked = () => t.pass('event handler moved')
   mount(
     <ul>
       <ListItem key="foo">One</ListItem>
@@ -893,15 +912,15 @@ test('moving components with keys', ({equal,end,ok,pass,plan}) => {
   )
   trigger(el.querySelector('span'), 'click')
 
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('updating event handlers when children are removed', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
-  var items = ['foo','bar','baz']
+test('updating event handlers when children are removed', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  const items = ['foo','bar','baz']
 
-  var ListItem = (props) => {
+  const ListItem = (props) => {
     return (
       <li>
         <a onClick={e => items.splice(props.index, 1)} />
@@ -909,7 +928,7 @@ test('updating event handlers when children are removed', ({equal,end}) => {
     )
   }
 
-  var List = (props) => {
+  const List = (props) => {
     return (
       <ul>
         {props.items.map((_,i) => <ListItem index={i} />)}
@@ -924,10 +943,10 @@ test('updating event handlers when children are removed', ({equal,end}) => {
   mount(<List items={items} />)
   trigger(el.querySelector('a'), 'click')
   mount(<List items={items} />)
-  equal(el.innerHTML, '<ul></ul>', 'all items were removed')
+  t.equal(el.innerHTML, '<ul></ul>', 'all items were removed')
 
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
 test('components should receive path based keys if they are not specified', t => {
