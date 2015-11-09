@@ -8,10 +8,15 @@ import thunkify from './util/thunkify'
  * Vnode creator
  */
 
-function element (tag, attrs, ...children) {
-  children = filterFlatten(children, children, 0)
-  let key
+function element (tag, attrs) {
+  const len = arguments.length
+  const children = []
 
+  for (let i = 2, j = 0; i < len; ++i) {
+    j += filterFlatten(arguments[i], children, j)
+  }
+
+  let key
   if (attrs !== null && typeof attrs.key !== 'undefined') {
     key = attrs.key
     if (!hasMoreKeysThan(attrs, 1)) {
@@ -29,7 +34,8 @@ function element (tag, attrs, ...children) {
     key,
     tag,
     attrs,
-    children
+    children,
+    el: null
   }
 }
 
@@ -49,49 +55,34 @@ function hasMoreKeysThan (obj, n) {
  * algorithm
  */
 
-function filterFlatten (items, arr, arrStart) {
-  const len = items.length
-  let remove = 0
+function filterFlatten (item, arr, arrStart) {
+  let added = 0
 
-  for (let i = 0, j = arrStart; i < len; ++i, ++j) {
-    const item = items[i]
-
-    switch (type(item)) {
-      case 'array':
-        const delta = item.length - 1
-        if (delta !== -1) {
-          filterFlatten(item, arr, j)
-          j += delta
-        } else {
-          j--
-          remove++
-        }
-        break
-      case 'undefined':
-      case 'null':
-        j--
-        remove++
-        break
-      case 'string':
-      case 'number':
-        arr[j] = {text: item}
-        break
-      default:
-        arr[j] = item
-        break
-    }
+  switch (type(item)) {
+    case 'array':
+      const len = item.length
+      for (let i = 0; i < len; ++i) {
+        added += filterFlatten(item[i], arr, arrStart + added)
+      }
+      return added
+    case 'null':
+    case 'undefined':
+      return 0
+    case 'string':
+    case 'number':
+      arr[arrStart] = {text: item}
+      break
+    default:
+      arr[arrStart] = item
+      break
   }
 
-  if (remove > 0) {
-    arr.splice(len - (remove + arrStart), remove)
-  }
-
-  return arr
+  return 1
 }
 
 function type (val) {
-  if (val === null) return 'null'
   if (Array.isArray(val)) return 'array'
+  if (val === null) return 'null'
   return typeof val
 }
 

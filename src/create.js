@@ -5,24 +5,32 @@
 import isThunk from './util/isThunk'
 import isText from './util/isText'
 import {createElement, createTextNode, renderThunk} from './actions'
-import map from './util/map'
 
 /**
  * Create the initial document fragment
  */
 
 function create (effect) {
-  return function createRecursive (vnode, path = '0') {
-    if (isThunk(vnode)) {
-      vnode.path = path
-      return createRecursive(effect(renderThunk(vnode)), path + '.0')
+  return vnode => createRecursive(vnode, '', 0)
+
+  function createRecursive (vnode, path, idx) {
+    while (isThunk(vnode)) {
+      vnode.path = path = path + '.' + idx
+      vnode = effect(renderThunk(vnode))
     }
 
-    vnode.el = isText(vnode)
-      ? effect(createTextNode(vnode.text))
-      : effect(createElement(vnode.tag, vnode.attrs, map(vnode.children, (child, i) => createRecursive(child, path + '.' + i))))
+    if (isText(vnode)) {
+      return (vnode.el = effect(createTextNode(vnode.text)))
+    } else {
+      const vchildren = vnode.children
 
-    return vnode.el
+      for (let i = 0, len = vchildren.length; i < len; ++i) {
+        const child = vchildren[i]
+        child.el = createRecursive(child, path, i)
+      }
+
+      return (vnode.el = effect(createElement(vnode)))
+    }
   }
 }
 

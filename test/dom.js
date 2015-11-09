@@ -822,7 +822,7 @@ test('moving components with keys', t => {
       <ListItem key="bar">Two</ListItem>
     </ul>
   )
-  ;[one, two] = el.querySelectorAll('li')
+  ;[one, two] = [].slice.call(el.querySelectorAll('li'))
 
   // Moving
   mount(
@@ -854,7 +854,7 @@ test('moving components with keys', t => {
     </ul>
   )
 
-  ;[one,two,three] = el.querySelectorAll('li')
+  ;[one,two,three] = [].slice.call(el.querySelectorAll('li'))
   mount(
     <ul>
       <ListItem key="foo">One</ListItem>
@@ -865,7 +865,7 @@ test('moving components with keys', t => {
   t.ok(updated[0] === one, 'foo is the same')
   t.ok(updated[1] === three, 'baz is the same')
   t.ok(updated[1].innerHTML === 'Four', 'baz was updated')
-  let [foo, baz] = updated
+  let [foo, baz] = [].slice.call(updated)
 
   // Adding
   mount(
@@ -920,20 +920,26 @@ test('updating event handlers when children are removed', t => {
   const {mount, renderer, el} = setup(t.equal)
   const items = ['foo','bar','baz']
 
-  const ListItem = (props) => {
-    return (
-      <li>
-        <a onClick={e => items.splice(props.index, 1)} />
-      </li>
-    )
+  const ListItem = {
+    shouldUpdate () { return true },
+    render (props) {
+      return (
+        <li>
+          <a onClick={e => { items.splice(props.index, 1); console.log('remove') }} />
+        </li>
+      )
+    }
   }
 
-  const List = (props) => {
-    return (
-      <ul>
-        {props.items.map((_,i) => <ListItem index={i} />)}
-      </ul>
-    )
+  const List = {
+    shouldUpdate () { return true },
+    render (props) {
+      return (
+        <ul>
+          {props.items.map((_,i) => <ListItem index={i} />)}
+        </ul>
+      )
+    }
   }
 
   mount(<List items={items} />)
@@ -952,3 +958,71 @@ test('updating event handlers when children are removed', t => {
 test('components should receive path based keys if they are not specified', t => {
   t.end()
 })
+
+test('array jsx', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  const arr = [1, 2]
+
+  mount(
+    <div>
+      Hello World
+      {arr.map(i => <span>{i}</span>)}
+      <hr/>
+    </div>
+  )
+
+  const n = el.firstChild
+  t.equal(n.childNodes[0].nodeName, '#text')
+  t.equal(n.childNodes[1].nodeName, 'SPAN')
+  t.equal(n.childNodes[2].nodeName, 'SPAN')
+  t.equal(n.childNodes[3].nodeName, 'HR')
+
+  teardown({renderer, el})
+  t.end()
+})
+
+
+test('diff', t => {
+  t.test('reverse', diffXf(r => r.reverse()))
+  t.test('prepend (1)', diffXf(r => [11].concat(r)))
+  t.test('remove (1)', diffXf(r => r.slice(1)))
+  t.test('reverse, remove(1)', diffXf(r => r.reverse().slice(1)))
+  t.test('remove (1), reverse', diffXf(r => r.slice(1).reverse()))
+  t.test('reverse, append (1)', diffXf(r => r.reverse().concat(11)))
+  t.test('reverse, prepend (1)', diffXf(r => [11].concat(r.reverse())))
+
+  t.test('sides reversed, middle same', diffXf(r => r.slice().reverse().slice(0, 3).concat(r.slice(3, 7)).concat(r.slice().reverse().slice(7))))
+  t.test('replace all', diffXf(r => range(11, 25)))
+})
+
+function range (begin, end) {
+  const r = []
+
+  for (let i = begin; i < end; i++) {
+    r.push(i)
+  }
+
+  return r
+}
+
+function diffXf (xf) {
+  return t => {
+    const r = range(0, 10)
+    diffTest(t, r, xf(r.slice()))
+    t.end()
+  }
+}
+
+function diffTest (t, a, b) {
+  const {mount, renderer, el} = setup(t.equal)
+
+  mount(<div>{a.map(i => <span key={i}>{i}</span>)}</div>)
+  mount(<div>{b.map(i => <span key={i}>{i}</span>)}</div>)
+
+  const node = el.firstChild
+  for (let i = 0; i < node.childNodes.length; i++) {
+    t.equal(node.childNodes[i].textContent, b[i].toString())
+  }
+
+  t.equal(node.childNodes.length, b.length)
+}

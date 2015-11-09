@@ -2,7 +2,7 @@
  * Imports
  */
 
-import actions from './actions'
+import * as actions from './actions'
 import update from './update'
 import create from './create'
 import element from './element'

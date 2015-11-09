@@ -24,12 +24,10 @@ function createTextNode (text) {
   }
 }
 
-function createElement (tag, attrs, children) {
+function createElement (vnode) {
   return {
     type: CREATE_ELEMENT,
-    tag,
-    attrs,
-    children
+    vnode
   }
 }
 
@@ -106,28 +104,30 @@ function unrenderThunk (thunk) {
  * Exports
  */
 
-export default {
+const types = {
+  CREATE_TEXT_NODE,
+  CREATE_ELEMENT,
+  SET_ATTRIBUTE,
+  REMOVE_ATTRIBUTE,
+  APPEND_CHILD,
+  REPLACE_CHILD,
+  REMOVE_CHILD,
+  INSERT_BEFORE,
+  RENDER_THUNK,
+  UNRENDER_THUNK
+}
+
+export {
   createTextNode,
   createElement,
   setAttribute,
   removeAttribute,
   appendChild,
-  removeChild,
   replaceChild,
+  removeChild,
   insertBefore,
   renderThunk,
   unrenderThunk,
 
-  types: {
-    CREATE_TEXT_NODE,
-    CREATE_ELEMENT,
-    SET_ATTRIBUTE,
-    REMOVE_ATTRIBUTE,
-    APPEND_CHILD,
-    REPLACE_CHILD,
-    REMOVE_CHILD,
-    INSERT_BEFORE,
-    RENDER_THUNK,
-    UNRENDER_THUNK
-  }
+  types
 }

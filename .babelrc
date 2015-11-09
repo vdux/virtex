@@ -1,5 +1,7 @@
 {
-  "optional": ["es7.objectRestSpread"],
-  "loose": "all",
-  "jsxPragma": "element"
+  "presets": ["es2015"],
+  "comments": false,
+  "plugins": [
+    ["transform-react-jsx", {"pragma": "element"}]
+  ]
 }

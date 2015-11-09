@@ -6,9 +6,9 @@ import isThunk from './util/isThunk'
 import isSameThunk from './util/isSameThunk'
 import isText from './util/isText'
 import forEach from './util/forEach'
-import actions from './actions'
+import * as actions from './actions'
 import _create from './create'
-import diff, {CREATE, MOVE, REMOVE, UPDATE} from 'dift'
+import diff, * as ops from 'dift'
 
 /**
  * Diff and render two vnode trees
@@ -16,19 +16,12 @@ import diff, {CREATE, MOVE, REMOVE, UPDATE} from 'dift'
 
 function update (effect) {
   const create = _create(effect)
-  const {
-    setAttribute,
-    removeAttribute,
-    replaceChild,
-    removeChild,
-    insertBefore,
-    renderThunk,
-    unrenderThunk
-  } = actions
+  const {setAttribute, removeAttribute, replaceChild, removeChild, insertBefore, renderThunk, unrenderThunk} = actions
+  const {CREATE, MOVE, REMOVE, UPDATE} = ops
 
-  return updateRecursive
+  return (prev, next) => updateRecursive(prev, next, '', 0)
 
-  function updateRecursive (prev, next, path = '0') {
+  function updateRecursive (prev, next, path, idx) {
 
     /**
      * Render thunks if necessary
@@ -40,7 +33,7 @@ function update (effect) {
           unrenderThunk(prev)
         }
 
-        next.path = path
+        next.path = path + '.' + idx
         next = effect(renderThunk(next, prev))
       } else {
         effect(unrenderThunk(prev))
@@ -51,12 +44,12 @@ function update (effect) {
       if (next === prev) {
         return (next.el = prev.el)
       } else {
-        return updateRecursive(prev, next, path + '.0')
+        return updateRecursive(prev, next, next.path + '.0')
       }
     } else if (isThunk(next)) {
-      next.path = path
+      next.path = path + '.' + idx
       next = effect(renderThunk(next))
-      return updateRecursive(prev, next, path + '.0')
+      return updateRecursive(prev, next, next.path + '.0')
     }
 
     const node = next.el = prev.el
@@ -66,12 +59,12 @@ function update (effect) {
         if (prev.text !== next.text) effect(setAttribute(node, 'nodeValue', next.text))
         return node
       } else {
-        const newNode = create(next)
+        const newNode = next.el = create(next)
         effect(replaceChild(node.parentNode, newNode, node))
         return newNode
       }
     } else if (isText(next) || prev.tag !== next.tag) {
-      const newNode = create(next)
+      const newNode = next.el = create(next)
       unrenderChildren(prev)
       effect(replaceChild(node.parentNode, newNode, node))
       return newNode
@@ -104,29 +97,34 @@ function update (effect) {
      * Diff children
      */
 
-    diff(prev.children, next.children, diffChild(node, path))
+    diff(prev.children, next.children, diffChild(node, path), key)
 
     return node
   }
 
   function diffChild (node, path) {
-    return function (type, prev, next, pos) {
+    return function (type, pItem, nItem, pos) {
       switch (type) {
-        case CREATE:
-          effect(insertBefore(node, create(next, path + '.' + pos), node.childNodes[pos] || null))
-          break
         case UPDATE:
-          updateRecursive(prev, next, path + '.' + pos)
-          break
+          return updateRecursive(pItem, nItem, path, pos)
+        case CREATE:
+          return effect(insertBefore(node, create(nItem, path, pos), node.childNodes[pos] || null))
         case MOVE:
-          effect(insertBefore(node, updateRecursive(prev, next, path + '.' + pos), node.childNodes[pos] || null))
-          break
+          return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), node.childNodes[pos] || null))
         case REMOVE:
-          unrenderThunks(prev)
-          effect(removeChild(node, nativeElement(prev)))
-          break
+          unrenderThunks(pItem)
+          return effect(removeChild(node, nativeElement(pItem)))
       }
     }
+  }
+
+  function key (vnode) {
+    return vnode.key
+  }
+
+  function nativeElement (vnode) {
+    while (vnode.vnode) vnode = vnode.vnode
+    return vnode.el
   }
 
   function unrenderThunks (vnode) {
@@ -147,12 +145,6 @@ function update (effect) {
       }
     }
   }
-}
-
-function nativeElement (vnode) {
-  return vnode.vnode
-    ? vnode.vnode.el
-    : vnode.el
 }
 
 /**
