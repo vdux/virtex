@@ -12,8 +12,9 @@
   "dependencies": {
     "component-raf": "^1.2.0",
     "delegant": "^0.1.3",
-    "dift": "^0.1.5",
+    "dift": "^0.1.8",
     "envify": "^3.4.0",
+    "foreach": "github:micro-js/foreach",
     "redux": "^3.0.4",
     "standard": "^5.3.1",
     "tap-dev-tool": "^1.3.0",

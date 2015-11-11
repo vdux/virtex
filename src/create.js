@@ -4,13 +4,17 @@
 
 import isThunk from './util/isThunk'
 import isText from './util/isText'
-import {createElement, createTextNode, renderThunk} from './actions'
+import * as actions from './actions'
 
 /**
  * Create the initial document fragment
  */
 
 function create (effect) {
+  // Destructure here so that babel doesn't keep referencing these functions on 'actions'
+  // which is slightly slower
+  const {createElement, createTextNode, renderThunk} = actions
+
   return vnode => createRecursive(vnode, '', 0)
 
   function createRecursive (vnode, path, idx) {

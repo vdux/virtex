@@ -990,10 +990,19 @@ test('diff', t => {
   t.test('remove (1), reverse', diffXf(r => r.slice(1).reverse()))
   t.test('reverse, append (1)', diffXf(r => r.reverse().concat(11)))
   t.test('reverse, prepend (1)', diffXf(r => [11].concat(r.reverse())))
-
   t.test('sides reversed, middle same', diffXf(r => r.slice().reverse().slice(0, 3).concat(r.slice(3, 7)).concat(r.slice().reverse().slice(7))))
   t.test('replace all', diffXf(r => range(11, 25)))
+  t.test('insert (3), randomize', diffXf(r => randomize(r.concat(range(13, 17)))))
 })
+
+function randomize (r) {
+  return r.reduce(acc => {
+    const i = Math.floor(Math.random() * 100000) % r.length
+    acc.push(r[i])
+    r.splice(i, 1)
+    return acc
+  }, [])
+}
 
 function range (begin, end) {
   const r = []

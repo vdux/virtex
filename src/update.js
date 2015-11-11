@@ -5,7 +5,7 @@
 import isThunk from './util/isThunk'
 import isSameThunk from './util/isSameThunk'
 import isText from './util/isText'
-import forEach from './util/forEach'
+import forEach from 'foreach'
 import * as actions from './actions'
 import _create from './create'
 import diff, * as ops from 'dift'
