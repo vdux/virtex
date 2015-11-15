@@ -10,6 +10,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
+    "babel-preset-stage-2": "^6.1.18",
     "component-raf": "^1.2.0",
     "delegant": "^0.1.3",
     "dift": "^0.1.8",

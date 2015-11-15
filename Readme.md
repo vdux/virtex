@@ -57,7 +57,7 @@ Virtex is not the fastest, but it's pretty fast.  6-7x faster than React, and ab
   * [virtex-dom](https://github.com/ashaffer/virtex-dom) - DOM rendering effect processor
   * [virtex-component](https://github.com/ashaffer/virtex-component) - Enables react/deku-like components
   * [virtex-local](https://github.com/ashaffer/virtex-local) - Adds local state and refs
-  * [virtex-string](https://github.com/ashaffer/virtex-string) - String rendering
+  * [virtex-string](https://github.com/ashaffer/virtex-string) - String rendering backend
 
 ## License
 

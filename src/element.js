@@ -20,7 +20,7 @@ function element (tag, attrs) {
   let key
   if (attrs !== null && typeof attrs.key !== 'undefined') {
     key = attrs.key
-    if (!hasMoreKeysThan(attrs, 1)) {
+    if (Object.keys(attrs).length === 1) {
       attrs = null
     } else {
       attrs.key = null
@@ -38,17 +38,6 @@ function element (tag, attrs) {
     children,
     el: null
   }
-}
-
-function hasMoreKeysThan (obj, n) {
-  let i = 0
-
-  for (let k in obj) {
-    ++i
-    if (i > n) return true
-  }
-
-  return false
 }
 
 /**

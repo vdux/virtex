@@ -16,10 +16,13 @@ function app ({counters}) {
 }
 
 const Counter = {
-  beforeMount ({idx}) {
+  beforeMount ({props}) {
+    const {idx} = props
     return increment(idx)
   },
-  render ({value = 0, idx}) {
+  render ({props}) {
+    const {value = 0, idx} = props
+
     return (
       <div style={{color: value % 2 ? 'red' : 'blue'}}>
         <div>Counter: {value}</div>

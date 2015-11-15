@@ -16,6 +16,8 @@ import diff, * as ops from 'dift'
 
 function update (effect) {
   const create = _create(effect)
+  // It'd be cleaner to compose these guys with effect, but that seems to waste precious milliseconds in our
+  // vdom-benchmark (inside the composed function) - so we call effect(action()) each time.
   const {setAttribute, removeAttribute, replaceChild, removeChild, insertBefore, createThunk, updateThunk, destroyThunk} = actions
   const {CREATE, MOVE, REMOVE, UPDATE} = ops
 
@@ -57,11 +59,18 @@ function update (effect) {
       return updateRecursive(prev, effect(createThunk(next)), next.model.path, 0)
     }
 
+    /**
+     * Diff the element type
+     */
+
     const node = next.el = prev.el
 
     if (isText(prev)) {
       if (isText(next)) {
-        if (prev.text !== next.text) effect(setAttribute(node, 'nodeValue', next.text))
+        if (prev.text !== next.text) {
+          effect(setAttribute(node, 'nodeValue', next.text))
+        }
+
         return node
       } else {
         const newNode = next.el = create(next)

@@ -73,6 +73,9 @@ function removeChild (node, oldChild) {
     type: REMOVE_CHILD,
     node,
     oldChild,
+    // Set newChild to null to try to ensure that as many of these actions
+    // have the same object shape as possible, which should allow v8
+    // to optimize them a bit better
     newChild: null
   }
 }
@@ -81,8 +84,8 @@ function insertBefore (node, newChild, oldChild) {
   return {
     type: INSERT_BEFORE,
     node,
-    newChild,
-    oldChild
+    oldChild,
+    newChild
   }
 }
 
