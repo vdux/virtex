@@ -2,7 +2,7 @@
   "name": "virtex",
   "description": "Small, focused virtual dom library.",
   "repository": "git://github.com/ashaffer/virtex.git",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
