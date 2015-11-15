@@ -13,7 +13,7 @@
     "babel-preset-stage-2": "^6.1.18",
     "component-raf": "^1.2.0",
     "delegant": "^0.1.3",
-    "dift": "^0.1.8",
+    "dift": "^0.1.9",
     "envify": "^3.4.0",
     "foreach": "github:micro-js/foreach",
     "redux": "^3.0.4",
@@ -27,7 +27,6 @@
     "virtex-string": "^0.1.0"
   },
   "devDependencies": {
-    "babel": "^6.0.15",
     "babel-plugin-transform-react-jsx": "^6.0.18",
     "babel-plugin-uglify": "^1.0.2",
     "babel-preset-es2015": "^6.1.2",

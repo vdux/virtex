@@ -996,6 +996,7 @@ test('diff', t => {
   t.test('sides reversed, middle same', diffXf(r => r.slice().reverse().slice(0, 3).concat(r.slice(3, 7)).concat(r.slice().reverse().slice(7))))
   t.test('replace all', diffXf(r => range(11, 25)))
   t.test('insert (3), randomize', diffXf(r => randomize(r.concat(range(13, 17)))))
+  t.test('moveFromStartToEnd (1)', diffXf(r => r.slice(1).concat(r[0])))
 })
 
 function randomize (r) {
