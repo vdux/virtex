@@ -3,7 +3,7 @@
  */
 
 function isThunk (vnode) {
-  return typeof vnode.thunk !== 'undefined'
+  return vnode.type === 'thunk'
 }
 
 /**

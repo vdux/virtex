@@ -24,8 +24,8 @@ test('rendering virtual element to a string', t => {
   t.equal(create(<Component />), '<div id="foo"><span>foo</span><span>foo</span></div>', 'element rendered')
   t.end()
 
-  function Other ({text}) {
-    return <span>{text}</span>
+  function Other ({props}) {
+    return <span>{props.text}</span>
   }
 
   function Component () {

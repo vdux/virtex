@@ -16,10 +16,10 @@ import diff, * as ops from 'dift'
 
 function update (effect) {
   const create = _create(effect)
-  const {setAttribute, removeAttribute, replaceChild, removeChild, insertBefore, renderThunk, unrenderThunk} = actions
+  const {setAttribute, removeAttribute, replaceChild, removeChild, insertBefore, createThunk, updateThunk, destroyThunk} = actions
   const {CREATE, MOVE, REMOVE, UPDATE} = ops
 
-  return (prev, next) => updateRecursive(prev, next, '', 0)
+  return (prev, next) => updateRecursive(prev, next, '0', 0)
 
   function updateRecursive (prev, next, path, idx) {
 
@@ -29,27 +29,32 @@ function update (effect) {
 
     if (isThunk(prev)) {
       if (isThunk(next)) {
+        next.model.path = path = path + '.' + idx
+
         if (!isSameThunk(prev, next)) {
-          unrenderThunk(prev)
+          // Both thunks, but not of the same variety
+          effect(destroyThunk(prev))
+          return updateRecursive(prev, effect(createThunk(next)), path, 0)
+        } else {
+          // Both thunks, same variety
+          next = effect(updateThunk(next, prev))
+          prev = prev.vnode
+
+          if (next === prev) {
+            return (next.el = prev.el)
+          } else {
+            return updateRecursive(prev, next, path, 0)
+          }
         }
-
-        next.path = path + '.' + idx
-        next = effect(renderThunk(next, prev))
       } else {
-        effect(unrenderThunk(prev))
-      }
-
-      prev = prev.vnode
-
-      if (next === prev) {
-        return (next.el = prev.el)
-      } else {
-        return updateRecursive(prev, next, next.path + '.0')
+        // Was a thunk, but is now not
+        effect(destroyThunk(prev))
+        return updateRecursive(prev.vnode, next, path, 0)
       }
     } else if (isThunk(next)) {
-      next.path = path + '.' + idx
-      next = effect(renderThunk(next))
-      return updateRecursive(prev, next, next.path + '.0')
+      // Wasn't a thunk, but now is
+      next.model.path = path + '.' + idx
+      return updateRecursive(prev, effect(createThunk(next)), next.model.path, 0)
     }
 
     const node = next.el = prev.el
@@ -129,7 +134,7 @@ function update (effect) {
 
   function unrenderThunks (vnode) {
     if (isThunk(vnode)) {
-      effect(unrenderThunk(vnode))
+      effect(destroyThunk(vnode))
       vnode = vnode.vnode
     }
 

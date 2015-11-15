@@ -10,8 +10,9 @@ const APPEND_CHILD = 'APPEND_CHILD'
 const REMOVE_CHILD = 'REMOVE_CHILD'
 const REPLACE_CHILD = 'REPLACE_CHILD'
 const INSERT_BEFORE = 'INSERT_BEFORE'
-const RENDER_THUNK = 'RENDER_THUNK'
-const UNRENDER_THUNK = 'UNRENDER_THUNK'
+const CREATE_THUNK = 'CREATE_THUNK'
+const UPDATE_THUNK = 'UPDATE_THUNK'
+const DESTROY_THUNK = 'DESTROY_THUNK'
 
 /**
  * Action creators for effectful things
@@ -85,17 +86,24 @@ function insertBefore (node, newChild, oldChild) {
   }
 }
 
-function renderThunk (thunk, prev) {
+function createThunk (thunk) {
   return {
-    type: RENDER_THUNK,
+    type: CREATE_THUNK,
+    thunk
+  }
+}
+
+function updateThunk (thunk, prev) {
+  return {
+    type: UPDATE_THUNK,
     thunk,
     prev
   }
 }
 
-function unrenderThunk (thunk) {
+function destroyThunk (thunk) {
   return {
-    type: UNRENDER_THUNK,
+    type: DESTROY_THUNK,
     thunk
   }
 }
@@ -113,8 +121,9 @@ const types = {
   REPLACE_CHILD,
   REMOVE_CHILD,
   INSERT_BEFORE,
-  RENDER_THUNK,
-  UNRENDER_THUNK
+  CREATE_THUNK,
+  UPDATE_THUNK,
+  DESTROY_THUNK
 }
 
 export {
@@ -126,8 +135,9 @@ export {
   replaceChild,
   removeChild,
   insertBefore,
-  renderThunk,
-  unrenderThunk,
+  createThunk,
+  updateThunk,
+  destroyThunk,
 
   types
 }

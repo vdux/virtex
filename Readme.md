@@ -5,6 +5,10 @@
 
 Small, focused virtual dom library.  Right now this is an experiment to try to create a simple virtual dom library that can be extended in interesting ways by allowing the calling code to reinterpret all side-effects (thunk rendering & DOM manipulation at the moment) via an action dispatcher.
 
+## Installation
+
+    $ npm install virtex
+
 ## Usage
 
 virtex consists of two functions `create` and `update`, curried with an effect processor.  You initialize them like this:
@@ -12,7 +16,7 @@ virtex consists of two functions `create` and `update`, curried with an effect p
 `const {create, update} = virtex(effect)`
 
   * `create(tree)` - takes a virtual node tree and returns a DOM element
-  * `update(oldTree, newTree, node)` - takes the previous vnode tree and the new vnode tree and renders them into `node`
+  * `update(oldTree, newTree)` - takes the previous vnode tree and the new vnode tree and rendders them into the DOM over the old nodes
   * `effect(action)` - handle all effectful actions (DOM manipulation and thunk rendering, for the time being)
 
 ## Example
@@ -42,15 +46,18 @@ store.subscribe(() => {
 
 ## Processing effects
 
-Your effect processor receives an action object, with at least 1 field: `type`.  The other object properties are type specific.  More documentation to be added here soon.
-
-## Installation
-
-    $ npm install virtex
+Your effect processor receives an action object, with at least one field: `type`.  The other object properties are type specific.  More documentation to be added here soon.
 
 ## Performance
 
-Virtex is not the fastest, but it's pretty fast.  6-7x faster than React, and about on par with [snabbdom](https://github.com/paldepind/snabbdom)/[deku](https://github.com/dekujs/deku).  Here's the [vdom-benchmark](https://github.com/ashaffer/vdom-benchmark-virtex).
+Virtex is not the fastest, but it's pretty fast.  6-7x faster than React, and about on par (ok, just a little slower) with [snabbdom](https://github.com/paldepind/snabbdom)/[deku](https://github.com/dekujs/deku).  Here's the [vdom-benchmark](https://github.com/ashaffer/vdom-benchmark-virtex).
+
+## Ecosystem
+
+  * [virtex-dom](https://github.com/ashaffer/virtex-dom) - DOM rendering effect processor
+  * [virtex-component](https://github.com/ashaffer/virtex-component) - Enables react/deku-like components
+  * [virtex-local](https://github.com/ashaffer/virtex-local) - Adds local state and refs
+  * [virtex-string](https://github.com/ashaffer/virtex-string) - String rendering
 
 ## License
 

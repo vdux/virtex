@@ -3,6 +3,7 @@
  */
 
 import thunkify from './util/thunkify'
+import textify from './util/textify'
 
 /**
  * Vnode creator
@@ -70,7 +71,7 @@ function filterFlatten (item, arr, arrStart) {
       return 0
     case 'string':
     case 'number':
-      arr[arrStart] = {text: item}
+      arr[arrStart] = textify(item)
       break
     default:
       arr[arrStart] = item

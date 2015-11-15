@@ -13,14 +13,14 @@ import * as actions from './actions'
 function create (effect) {
   // Destructure here so that babel doesn't keep referencing these functions on 'actions'
   // which is slightly slower
-  const {createElement, createTextNode, renderThunk} = actions
+  const {createElement, createTextNode, createThunk} = actions
 
-  return vnode => createRecursive(vnode, '', 0)
+  return (vnode, path = '0', idx = 0) => createRecursive(vnode, path, idx)
 
   function createRecursive (vnode, path, idx) {
     while (isThunk(vnode)) {
-      vnode.path = path = path + '.' + idx
-      vnode = effect(renderThunk(vnode))
+      vnode.model.path = path = path + '.' + idx
+      vnode = effect(createThunk(vnode))
     }
 
     if (isText(vnode)) {

@@ -26,10 +26,10 @@ const {create, update} = virtex(store.dispatch)
 
 // Test Components
 
-const RenderChildren  = props => props.children[0]
-const ListItem        = props => <li>{props.children}</li>
-const Wrapper         = props => <div>{props.children}</div>
-const TwoWords        = props => <span>{props.one} {props.two}</span>
+const RenderChildren  = ({children}) => children[0]
+const ListItem        = ({children}) => <li>{children}</li>
+const Wrapper         = ({children}) => <div>{children}</div>
+const TwoWords        = ({props}) => <span>{props.one} {props.two}</span>
 
 // Test helpers
 
@@ -97,9 +97,9 @@ function createAssertHTML (container, equal) {
  * So all credit to them for this great test suite
  */
 
-test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
-  var {renderer,el,mount,unmount,html} = setup(equal)
-  var rootEl
+test('rendering DOM', t => {
+  const {renderer, el, mount, unmount, html} = setup(t.equal)
+  let rootEl
 
   // Render
   mount(<span />)
@@ -127,7 +127,7 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
 
   // Update
   mount(<span name="Bob" />)
-  pass('DOM not updated without change')
+  t.pass('DOM not updated without change')
 
   // Update
   mount(<span>Hello World</span>)
@@ -148,12 +148,12 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
   html('<span> World</span>', 'text was replaced by undefined')
 
   // Root element should still be the same
-  equal(el.firstChild, rootEl, 'root element not replaced')
+  t.equal(el.firstChild, rootEl, 'root element not replaced')
 
   // Replace
   mount(<div>Foo!</div>)
   html('<div>Foo!</div>', 'element is replaced')
-  notEqual(el.firstChild, rootEl, 'root element replaced')
+  t.notEqual(el.firstChild, rootEl, 'root element replaced')
 
   // Clear
   unmount()
@@ -180,7 +180,7 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
   // Remove
   mount(<div></div>)
   html('<div></div>', 'removed element')
-  equal(el.firstChild, rootEl, 'root element not replaced')
+  t.equal(el.firstChild, rootEl, 'root element not replaced')
 
   // Children added
   mount(
@@ -197,8 +197,9 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
       <span>three</span>
     </div>`
   )
-  equal(el.firstChild, rootEl, 'root element not replaced')
-  var span = el.firstChild.firstChild
+
+  t.equal(el.firstChild, rootEl, 'root element not replaced')
+  const span = el.firstChild.firstChild
 
   // Siblings removed
   mount(
@@ -207,29 +208,31 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
     </div>
   )
   html('<div><span>one</span></div>', 'added element')
-  equal(el.firstChild.firstChild, span, 'child element not replaced')
-  equal(el.firstChild, rootEl, 'root element not replaced')
+  t.equal(el.firstChild.firstChild, span, 'child element not replaced')
+  t.equal(el.firstChild, rootEl, 'root element not replaced')
 
   // Removing the renderer
-  teardown({ renderer, el })
+  teardown({renderer, el})
   html('', 'element is removed')
-  end()
+  t.end()
 })
 
-test('falsy attributes should not touch the DOM', ({equal,end,pass,fail}) => {
-  var {renderer,el,mount} = setup(equal)
+test('falsy attributes should not touch the DOM', t => {
+  const {renderer, el, mount} = setup(t.equal)
   mount(<span name="" />)
-  var child = el.children[0]
-  child.setAttribute = () => fail('should not set attributes')
-  child.removeAttribute = () => fail('should not remove attributes')
+
+  const child = el.children[0]
+  child.setAttribute = () => t.fail('should not set attributes')
+  child.removeAttribute = () => t.fail('should not remove attributes')
+
   mount(<span name="" />)
-  pass('DOM not touched')
-  teardown({ renderer, el })
-  end()
+  t.pass('DOM not touched')
+  teardown({renderer, el})
+  t.end()
 })
 
-test('innerHTML attribute', ({equal,end}) => {
-  var {html,mount,el,renderer} = setup(equal)
+test('innerHTML attribute', t => {
+  const {html, mount, el, renderer} = setup(t.equal)
   mount(<div innerHTML="Hello <strong>deku</strong>" />)
   html('<div>Hello <strong>deku</strong></div>', 'innerHTML is rendered')
   mount(<div innerHTML="Hello <strong>Pluto</strong>" />)
@@ -237,82 +240,82 @@ test('innerHTML attribute', ({equal,end}) => {
   mount(<div />)
   // Causing issues in IE10. Renders with a &nbsp; for some reason
   // html('<div></div>', 'innerHTML is removed')
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('input attributes', ({equal,notEqual,end,ok,test,comment}) => {
-  var {html,mount,el,renderer,$} = setup(equal)
+test('input attributes', t => {
+  const {html, mount, el, renderer, $} = setup(t.equal)
   mount(<input />)
-  var checkbox = $('input')
+  const checkbox = $('input')
 
-  comment('input.value')
+  t.comment('input.value')
   mount(<input value="Bob" />)
-  equal(checkbox.value, 'Bob', 'value property set')
+  t.equal(checkbox.value, 'Bob', 'value property set')
   mount(<input value="Tom" />)
-  equal(checkbox.value, 'Tom', 'value property updated')
+  t.equal(checkbox.value, 'Tom', 'value property updated')
 
   mount(<input />)
-  equal(checkbox.value, '', 'value property removed')
+  t.equal(checkbox.value, '', 'value property removed')
 
-  comment('input cursor position')
+  t.comment('input cursor position')
   mount(<input type="text" value="Game of Thrones" />)
-  var input = $('input')
+  let input = $('input')
   input.focus()
   input.setSelectionRange(5,7)
   mount(<input type="text" value="Way of Kings" />)
-  equal(input.selectionStart, 5, 'selection start')
-  equal(input.selectionEnd, 7, 'selection end')
+  t.equal(input.selectionStart, 5, 'selection start')
+  t.equal(input.selectionEnd, 7, 'selection end')
 
-  comment('input cursor position on inputs that don\'t support text selection')
+  t.comment('input cursor position on inputs that don\'t support text selection')
   mount(<input type="email" value="a@b.com" />)
 
-  comment('input cursor position only the active element')
+  t.comment('input cursor position only the active element')
   mount(<input type="text" value="Hello World" />)
-  var input = $('input')
+  input = $('input')
   input.setSelectionRange(5,7)
   if (input.setActive) document.body.setActive()
   else input.blur()
   mount(<input type="text" value="Hello World!" />)
-  notEqual(input.selectionStart, 5, 'selection start')
-  notEqual(input.selectionEnd, 7, 'selection end')
+  t.notEqual(input.selectionStart, 5, 'selection start')
+  t.notEqual(input.selectionEnd, 7, 'selection end')
 
-  comment('input.checked')
+  t.comment('input.checked')
   mount(<input checked={true} />)
-  ok(checkbox.checked, 'checked with a true value')
-  equal(checkbox.getAttribute('checked'), null, 'has checked attribute')
+  t.ok(checkbox.checked, 'checked with a true value')
+  t.equal(checkbox.getAttribute('checked'), null, 'has checked attribute')
   mount(<input checked={false} />)
 
-  ok(!checkbox.checked, 'unchecked with a false value')
-  ok(!checkbox.hasAttribute('checked'), 'has no checked attribute')
+  t.ok(!checkbox.checked, 'unchecked with a false value')
+  t.ok(!checkbox.hasAttribute('checked'), 'has no checked attribute')
   mount(<input checked />)
-  ok(checkbox.checked, 'checked with a boolean attribute')
-  equal(checkbox.getAttribute('checked'), null, 'has checked attribute')
+  t.ok(checkbox.checked, 'checked with a boolean attribute')
+  t.equal(checkbox.getAttribute('checked'), null, 'has checked attribute')
   mount(<input />)
-  ok(!checkbox.checked, 'unchecked when attribute is removed')
-  ok(!checkbox.hasAttribute('checked'), 'has no checked attribute')
+  t.ok(!checkbox.checked, 'unchecked when attribute is removed')
+  t.ok(!checkbox.hasAttribute('checked'), 'has no checked attribute')
 
-  comment('input.disabled')
+  t.comment('input.disabled')
   mount(<input disabled={true} />)
-  ok(checkbox.disabled, 'disabled with a true value')
-  equal(checkbox.hasAttribute('disabled'), true, 'has disabled attribute')
+  t.ok(checkbox.disabled, 'disabled with a true value')
+  t.equal(checkbox.hasAttribute('disabled'), true, 'has disabled attribute')
   mount(<input disabled={false} />)
-  equal(checkbox.disabled, false, 'disabled is false with false value')
-  equal(checkbox.hasAttribute('disabled'), false, 'has no disabled attribute')
+  t.equal(checkbox.disabled, false, 'disabled is false with false value')
+  t.equal(checkbox.hasAttribute('disabled'), false, 'has no disabled attribute')
   mount(<input disabled />)
-  ok(checkbox.disabled, 'disabled is true with a boolean attribute')
-  equal(checkbox.hasAttribute('disabled'), true, 'has disabled attribute')
+  t.ok(checkbox.disabled, 'disabled is true with a boolean attribute')
+  t.equal(checkbox.hasAttribute('disabled'), true, 'has disabled attribute')
   mount(<input />)
-  equal(checkbox.disabled, false, 'disabled is false when attribute is removed')
-  equal(checkbox.hasAttribute('disabled'), false, 'has no disabled attribute')
+  t.equal(checkbox.disabled, false, 'disabled is false when attribute is removed')
+  t.equal(checkbox.hasAttribute('disabled'), false, 'has no disabled attribute')
 
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('option[selected]', ({ok,end,equal}) => {
-  var {mount,renderer,el} = setup(equal)
-  var options
+test('option[selected]', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  let options
 
   // first should be selected
   mount(
@@ -323,8 +326,8 @@ test('option[selected]', ({ok,end,equal}) => {
   )
 
   options = el.querySelectorAll('option')
-  ok(!options[1].selected, 'is not selected')
-  ok(options[0].selected, 'is selected')
+  t.ok(!options[1].selected, 'is not selected')
+  t.ok(options[0].selected, 'is selected')
 
   // second should be selected
   mount(
@@ -335,65 +338,67 @@ test('option[selected]', ({ok,end,equal}) => {
   )
 
   options = el.querySelectorAll('option')
-  ok(!options[0].selected, 'is not selected')
-  ok(options[1].selected, 'is selected')
+  t.ok(!options[0].selected, 'is not selected')
+  t.ok(options[1].selected, 'is selected')
 
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('components', ({equal,end}) => {
-  var {el,renderer,mount,html} = setup(equal)
-  var Test = props => <span count={props.count}>Hello World</span>
+test('components', t => {
+  const {el, renderer, mount, html} = setup(t.equal)
+  const Test = ({props}) => <span count={props.count}>Hello World</span>
 
   mount(<Test count={2} />)
-  var root = el.firstElementChild
-  equal(root.getAttribute('count'), '2', 'rendered with props')
+  const root = el.firstElementChild
+  t.equal(root.getAttribute('count'), '2', 'rendered with props')
 
   mount(<Test count={3} />)
-  equal(root.getAttribute('count'), '3', 'props updated')
+  t.equal(root.getAttribute('count'), '3', 'props updated')
 
   teardown({renderer,el})
-  equal(el.innerHTML, '', 'the element is removed')
-  end()
+  t.equal(el.innerHTML, '', 'the element is removed')
+  t.end()
 })
 
-test('simple components', ({equal,end}) => {
-  var {el,renderer,mount,html} = setup(equal)
-  var Box = (props) => <div>{props.text}</div>
+test('simple components', t => {
+  const {el, renderer, mount, html} = setup(t.equal)
+  const Box = ({props}) => <div>{props.text}</div>
+
   mount(<Box text="Hello World" />)
   html('<div>Hello World</div>', 'function component rendered')
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test.skip('nested root components should not have an element', ({deepEqual,mount,end,equal}) => {
-  var {el,renderer,mount,html} = setup(equal)
-  var Box = props => <div>{props.text}</div>
-  var Container = {
-    render: props => <Box text="hello" />,
-    afterMount: (props, el) => {
-      equal(el, undefined)
+test.skip('nested root components should not have an element', t => {
+  const {el, renderer, mount, html} = setup(t.equal)
+  const Box = ({props}) => <div>{props.text}</div>
+  const Container = {
+    render: () => <Box text="hello" />,
+    afterMount: ({props}, el) => {
+      t.equal(el, undefined)
     }
   }
+
   mount(<Container />)
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
 test('nested component lifecycle hooks fire in the correct order', t => {
-  const {el,renderer,mount} = setup(t.equal)
+  const {el, renderer, mount} = setup(t.equal)
   let log = []
 
   const LifecycleLogger = {
-    render (props) {
+    render ({props, children}) {
       log.push(props.name + ' render')
-      return <div>{props.children}</div>
+      return <div>{children}</div>
     },
-    afterMount (props) {
+    afterMount ({props}) {
       log.push(props.name + ' afterMount')
     },
-    beforeUnmount (props) {
+    beforeUnmount ({props}) {
       log.push(props.name + ' beforeUnmount')
     },
     shouldUpdate () {
@@ -469,27 +474,27 @@ test('nested component lifecycle hooks fire in the correct order', t => {
 })
 
 test('component lifecycle hook signatures', t => {
-  var {mount,renderer,el} = setup(t.equal)
+  const {mount, renderer, el} = setup(t.equal)
 
-  var MyComponent = {
-    validate (props) {
+  const MyComponent = {
+    validate ({props}) {
       t.ok(props, 'validate has props')
     },
-    render (props) {
+    render ({props}) {
       t.ok(props, 'render has props')
       return <div id="foo" />
     },
-    afterMount (props) {
+    afterMount ({props}) {
       t.ok(props, 'afterMount has props')
     },
-    beforeUnmount (props) {
+    beforeUnmount ({props}) {
       t.ok(props, 'beforeUnmount has props')
       t.end()
     }
   }
 
   mount(<MyComponent />)
-  teardown({renderer,el})
+  teardown({renderer, el})
 })
 
 test('replace props instead of merging', t => {
@@ -507,7 +512,7 @@ test(`should update all children when a parent component changes`, t => {
   let childCalls = 0
 
   const Child = {
-    render (props) {
+    render ({props}) {
       childCalls++
       return <span>{props.text}</span>
     },
@@ -517,7 +522,7 @@ test(`should update all children when a parent component changes`, t => {
   }
 
   const Parent = {
-    render (props) {
+    render ({props}) {
       parentCalls++
       return (
         <div name={props.character}>
@@ -535,9 +540,9 @@ test(`should update all children when a parent component changes`, t => {
   t.end()
 })
 
-test.skip('batched rendering', assert => {
-  var i = 0
-  var IncrementAfterUpdate = {
+test.skip('batched rendering', t => {
+  let i = 0
+  const IncrementAfterUpdate = {
     render: function(){
       return <div></div>
     },
@@ -545,26 +550,27 @@ test.skip('batched rendering', assert => {
       i++
     }
   }
-  var el = document.createElement('div')
-  var app = deku()
+
+  const el = document.createElement('div')
+  const app = deku()
   app.mount(<IncrementAfterUpdate text="one" />)
-  var renderer = render(app, el)
+  const renderer = render(app, el)
   app.mount(<IncrementAfterUpdate text="two" />)
   app.mount(<IncrementAfterUpdate text="three" />)
-  raf(function(){
-    assert.equal(i, 1, 'rendered *once* on the next frame')
+  raf(() => {
+    t.equal(i, 1, 'rendered *once* on the next frame')
     renderer.remove()
-    assert.end()
+    t.end()
   })
 })
 
-test('rendering nested components', ({equal,end}) => {
-  var {mount,renderer,el,html} = setup(equal)
+test('rendering nested components', t => {
+  const {mount, renderer, el, html} = setup(t.equal)
 
-  var ComponentA = (props) => <div name="ComponentA">{props.children}</div>
-  var ComponentB = (props) => <div name="ComponentB">{props.children}</div>
+  const ComponentA = ({children}) => <div name="ComponentA">{children}</div>
+  const ComponentB = ({children}) => <div name="ComponentB">{children}</div>
 
-  var ComponentC = (props) => {
+  const ComponentC = ({props}) => {
     return (
       <div name="ComponentC">
         <ComponentB>
@@ -579,34 +585,33 @@ test('rendering nested components', ({equal,end}) => {
   mount(<ComponentC text='Hello World!' />)
   html('<div name="ComponentC"><div name="ComponentB"><div name="ComponentA"><span>Hello World!</span></div></div></div>', 'element is rendered')
   mount(<ComponentC text='Hello Pluto!' />)
-  equal(el.innerHTML, '<div name="ComponentC"><div name="ComponentB"><div name="ComponentA"><span>Hello Pluto!</span></div></div></div>', 'element is updated with props')
-  teardown({renderer,el})
+  t.equal(el.innerHTML, '<div name="ComponentC"><div name="ComponentB"><div name="ComponentA"><span>Hello Pluto!</span></div></div></div>', 'element is updated with props')
+  teardown({renderer, el})
   html('', 'element is removed')
-  end()
+  t.end()
 })
 
-test('skipping updates when the same virtual element is returned', ({equal,end,fail,pass}) => {
-  var {mount,renderer,el} = setup(equal)
-  var i = 0
-  var el = <div onUpdate={el => i++} />
+test('skipping updates when the same virtual element is returned', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  let i = 0
+  const vnode = <div onUpdate={el => i++} />
 
-  var Component = {
+  const Component = {
     render (component) {
-      return el
+      return vnode
     }
   }
 
   mount(<Component />)
   mount(<Component />)
-  equal(i, 1, 'component not updated')
-  teardown({renderer,el})
-  end()
+  t.equal(i, 1, 'component not updated')
+  teardown({renderer, el})
+  t.end()
 })
 
 test('firing mount events on sub-components created later', t => {
-  var {mount,renderer,el} = setup(t.equal)
-
-  var ComponentA = {
+  const {mount, renderer, el} = setup(t.equal)
+  const ComponentA = {
     render: () => <div />,
     beforeUnmount: () => t.pass('beforeUnmount called'),
     afterMount: () => t.pass('afterMount called')
@@ -621,11 +626,8 @@ test('firing mount events on sub-components created later', t => {
 test('should change root node and still update correctly', t => {
   const {mount, html, renderer, el} = setup(t.equal)
 
-  const ComponentA = props =>
-    element(props.type, null, props.text)
-
-  const Test = props =>
-    <ComponentA type={props.type} text={props.text} />
+  const ComponentA = ({props}) => element(props.type, null, props.text)
+  const Test = ({props}) => <ComponentA type={props.type} text={props.text} />
 
   mount(<Test type="span" text="test" />)
   html('<span>test</span>')
@@ -642,7 +644,7 @@ test('replacing components with other components', t => {
   const ComponentA = () => <div>A</div>
   const ComponentB = () => <div>B</div>
 
-  const ComponentC = (props) => {
+  const ComponentC = ({props}) => {
     if (props.type === 'A') {
       return <ComponentA />
     } else {
@@ -658,36 +660,37 @@ test('replacing components with other components', t => {
   t.end()
 })
 
-test('adding, removing and updating events', ({equal,end}) => {
-  var {mount,renderer,el,$} = setup(equal)
-  var count = 0
-  var onclicka = () => count += 1
-  var onclickb = () => count -= 1
-
-  var Page = {
-    render: (props) => <span onClick={props.clicker} />
-  }
+test('adding, removing and updating events', t => {
+  const {mount, renderer, el, $} = setup(t.equal)
+  let count = 0
+  const onclicka = () => count += 1
+  const onclickb = () => count -= 1
 
   mount(<Page clicker={onclicka} />)
   trigger($('span'), 'click')
-  equal(count, 1, 'event added')
+  t.equal(count, 1, 'event added')
   mount(<Page clicker={onclickb} />)
   trigger($('span'), 'click')
-  equal(count, 0, 'event updated')
+  t.equal(count, 0, 'event updated')
   mount(<Page />)
   trigger($('span'), 'click')
-  equal(count, 0, 'event removed')
-  teardown({renderer,el})
-  end()
+  t.equal(count, 0, 'event removed')
+  teardown({renderer, el})
+  t.end()
+
+  function Page ({props}) {
+    return <span onClick={props.clicker} />
+  }
 })
 
-test('should bubble events', ({equal,end,fail,ok}) => {
-  var {mount,renderer,el,$} = setup(equal)
-  var state = {}
+test('should bubble events', t => {
+  const {mount, renderer, el, $} = setup(t.equal)
+  const state = {}
 
-  var Test = {
-    render: function (props) {
-      let state = props.state
+  const Test = {
+    render: function ({props}) {
+      const {state} = props
+
       return (
         <div onClick={onParentClick}>
           <div class={state.active ? 'active' : ''} onClick={onClickTest}>
@@ -701,45 +704,45 @@ test('should bubble events', ({equal,end,fail,ok}) => {
     }
   }
 
-  var onClickTest = function (event) {
+  mount(<Test state={state} />)
+  trigger($('a'), 'click')
+  t.equal(state.active, true, 'state was changed')
+  mount(<Test state={state} />)
+  t.ok($('.active'), 'event fired on parent element')
+  teardown({renderer, el})
+  t.end()
+
+  function onClickTest (event) {
     state.active = true
-    equal(el.firstChild.firstChild.firstChild, event.target, 'event.target is set')
+    t.equal(el.firstChild.firstChild.firstChild, event.target, 'event.target is set')
     event.stopImmediatePropagation()
   }
 
-  var onParentClick = function () {
-    fail('event bubbling was not stopped')
+  function onParentClick () {
+    t.fail('event bubbling was not stopped')
   }
-
-  mount(<Test state={state} />)
-  trigger($('a'), 'click')
-  equal(state.active, true, 'state was changed')
-  mount(<Test state={state} />)
-  ok($('.active'), 'event fired on parent element')
-  teardown({renderer,el})
-  end()
 })
 
-test('unmounting components when removing an element', ({equal,pass,end,plan}) => {
-  var {mount,renderer,el} = setup(equal)
+test('unmounting components when removing an element', t => {
+  const {mount, renderer, el} = setup(t.equal)
 
-  var Test = {
+  const Test = {
     render:        () => <div />,
-    beforeUnmount: () => pass('component was unmounted')
+    beforeUnmount: () => t.pass('component was unmounted')
   }
 
-  plan(1)
+  t.plan(1)
   mount(<div><div><Test /></div></div>)
   mount(<div></div>)
-  teardown({renderer,el})
-  end()
+  teardown({renderer, el})
+  t.end()
 })
 
-test('update sub-components with the same element', ({equal,end}) => {
-  var {mount,renderer,el} = setup(equal)
+test('update sub-components with the same element', t => {
+  const {mount, renderer, el} = setup(t.equal)
 
-  let Page1 = {
-    render(props) {
+  const Page1 = {
+    render ({props}) {
       return (
         <Wrapper>
           <Wrapper>
@@ -762,7 +765,7 @@ test('update sub-components with the same element', ({equal,end}) => {
     }
   }
 
-  let Page2 = (props) => {
+  const Page2 = ({props}) => {
     return (
       <div>
         <span>{props.title}</span>
@@ -770,15 +773,15 @@ test('update sub-components with the same element', ({equal,end}) => {
     )
   }
 
-  let App = (props) => props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
+  const App = ({props}) => props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
 
   mount(<App page={1} show={true} />)
   mount(<App page={1} show={false} />)
   mount(<App page={2} title="Hello World" />)
   mount(<App page={2} title="foo" />)
-  equal(el.innerHTML, '<div><span>foo</span></div>')
-  teardown({renderer,el})
-  end()
+  t.equal(el.innerHTML, '<div><span>foo</span></div>')
+  teardown({renderer, el})
+  t.end()
 })
 
 test('replace elements with component nodes', t => {
@@ -922,7 +925,7 @@ test('updating event handlers when children are removed', t => {
 
   const ListItem = {
     shouldUpdate () { return true },
-    render (props) {
+    render ({props}) {
       return (
         <li>
           <a onClick={e => { items.splice(props.index, 1); console.log('remove') }} />
@@ -933,7 +936,7 @@ test('updating event handlers when children are removed', t => {
 
   const List = {
     shouldUpdate () { return true },
-    render (props) {
+    render ({props}) {
       return (
         <ul>
           {props.items.map((_,i) => <ListItem index={i} />)}

@@ -3,7 +3,7 @@
  */
 
 function isText (vnode) {
-  return typeof vnode.text !== 'undefined'
+  return vnode.type === 'text'
 }
 
 /**

@@ -4,13 +4,17 @@
 
 function thunkify (component, props, children, key) {
   props = props || {}
-  props.children = children
 
   return {
-    thunk: true,
-    props,
+    type: 'thunk',
+    children,
     component,
-    key
+    key,
+    model: {
+      props,
+      children,
+      key
+    }
   }
 }
 
