@@ -2,13 +2,12 @@
  * Imports
  */
 
-import isThunk from './util/isThunk'
-import isSameThunk from './util/isSameThunk'
-import isText from './util/isText'
+import isString from 'is-string'
+import isUndefined from 'is-undefined'
 import forEach from 'foreach'
-import * as actions from './actions'
+import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
 import _create from './create'
-import diff, * as ops from 'dift'
+import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
 
 /**
  * Diff and render two vnode trees
@@ -16,119 +15,74 @@ import diff, * as ops from 'dift'
 
 function update (effect) {
   const create = _create(effect)
-  // It'd be cleaner to compose these guys with effect, but that seems to waste precious milliseconds in our
-  // vdom-benchmark (inside the composed function) - so we call effect(action()) each time.
-  const {setAttribute, removeAttribute, replaceChild, removeChild, insertBefore, createThunk, updateThunk, destroyThunk} = actions
-  const {CREATE, MOVE, REMOVE, UPDATE} = ops
-
   return (prev, next) => updateRecursive(prev, next, '0', 0)
 
   function updateRecursive (prev, next, path, idx) {
-
-    /**
-     * Render thunks if necessary
-     */
-
-    if (isThunk(prev)) {
-      if (isThunk(next)) {
-        next.model.path = path = path + '.' + idx
-
-        if (!isSameThunk(prev, next)) {
-          // Both thunks, but not of the same variety
-          effect(destroyThunk(prev))
-          return updateRecursive(prev, effect(createThunk(next)), path, 0)
-        } else {
-          // Both thunks, same variety
-          next = effect(updateThunk(next, prev))
-          prev = prev.vnode
-
-          if (next === prev) {
-            return (next.el = prev.el)
-          } else {
-            return updateRecursive(prev, next, path, 0)
-          }
-        }
-      } else {
-        // Was a thunk, but is now not
-        effect(destroyThunk(prev))
-        return updateRecursive(prev.vnode, next, path, 0)
-      }
-    } else if (isThunk(next)) {
-      // Wasn't a thunk, but now is
-      next.model.path = path + '.' + idx
-      return updateRecursive(prev, effect(createThunk(next)), next.model.path, 0)
-    }
-
-    /**
-     * Diff the element type
-     */
-
-    const node = next.el = prev.el
-
-    if (isText(prev)) {
-      if (isText(next)) {
-        if (prev.text !== next.text) {
-          effect(setAttribute(node, 'nodeValue', next.text))
-        }
-
-        return node
-      } else {
-        const newNode = next.el = create(next)
-        effect(replaceChild(node.parentNode, newNode, node))
-        return newNode
-      }
-    } else if (isText(next) || prev.tag !== next.tag) {
-      const newNode = next.el = create(next)
-      unrenderChildren(prev)
-      effect(replaceChild(node.parentNode, newNode, node))
-      return newNode
-    }
-
-    /**
-     * Diff attributes
-     */
-
+    const ptype = prev.type
+    const ntype = next.type
     const pattrs = prev.attrs
     const nattrs = next.attrs
+    const node = next.el = prev.el
 
-    if (pattrs !== null) {
+    if (ptype !== ntype) {
+      if (!isString(ptype)) {
+        prev = unrenderThunks(prev)
+      }
+
+      const oldNode = prev.el
+      const newNode = next.el = create(next)
+      effect(replaceNode(oldNode, newNode))
+      return newNode
+    } else if (ntype === '#text') {
+      if (nattrs.nodeValue !== pattrs.nodeValue) {
+        effect(setAttribute(node, 'nodeValue', nattrs.nodeValue))
+      }
+
+      return node
+    } else if (!isString(ntype)) {
+      next.path = path = path + '.' + idx
+      next = effect(updateThunk(next, prev))
+      prev = prev.vnode
+
+      return prev === next
+        ? next.el = prev.el
+        : updateRecursive(prev, next, path, 0)
+    } else {
+      /**
+       * Diff attributes
+       */
+
       forEach(pattrs, (val, key) => {
-        if (!nattrs || !(key in nattrs)) {
+        if (!nattrs || isUndefined(nattrs[key])) {
           effect(removeAttribute(node, key))
         }
       })
-    }
 
-    if (nattrs !== null) {
       forEach(nattrs, (val, key) => {
-        if (!pattrs || !(key in pattrs) || val !== pattrs[key]) {
+        if (!pattrs || val !== pattrs[key]) {
           effect(setAttribute(node, key, val))
         }
       })
-    }
 
-    /**
-     * Diff children
-     */
+      /**
+       * Diff children
+       */
 
-    diff(prev.children, next.children, diffChild(node, path), key)
+      diff(prev.children, next.children, (type, pItem, nItem, pos) => {
+        switch (type) {
+          case UPDATE:
+            return updateRecursive(pItem, nItem, path, pos)
+          case CREATE:
+            return effect(insertBefore(node, create(nItem, path, pos), node.childNodes[pos] || null))
+          case MOVE:
+            return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), node.childNodes[pos] || null))
+          case REMOVE:
+            unrenderThunks(pItem)
+            return effect(removeNode(nativeElement(pItem)))
+        }
+      }, key)
 
-    return node
-  }
-
-  function diffChild (node, path) {
-    return function (type, pItem, nItem, pos) {
-      switch (type) {
-        case UPDATE:
-          return updateRecursive(pItem, nItem, path, pos)
-        case CREATE:
-          return effect(insertBefore(node, create(nItem, path, pos), node.childNodes[pos] || null))
-        case MOVE:
-          return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), node.childNodes[pos] || null))
-        case REMOVE:
-          unrenderThunks(pItem)
-          return effect(removeChild(node, nativeElement(pItem)))
-      }
+      return node
     }
   }
 
@@ -142,21 +96,20 @@ function update (effect) {
   }
 
   function unrenderThunks (vnode) {
-    if (isThunk(vnode)) {
+    while (vnode.vnode) {
       effect(destroyThunk(vnode))
       vnode = vnode.vnode
     }
 
     unrenderChildren(vnode)
+    return vnode
   }
 
   function unrenderChildren (vnode) {
     const children = vnode.children
 
-    if (children) {
-      for (let i = 0, len = children.length; i < len; ++i) {
-        unrenderThunks(children[i])
-      }
+    for (let i = 0, len = children.length; i < len; ++i) {
+      unrenderThunks(children[i])
     }
   }
 }

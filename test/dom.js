@@ -61,7 +61,7 @@ function setup (equal) {
     },
     renderer: {
       remove () {
-        const newTree = {children: []}
+        const newTree = {type: 'fake-element', children: []}
         const parentNode = node.parentNode
         update(tree, newTree)
         parentNode.removeChild(parentNode.firstChild)

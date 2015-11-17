@@ -2,14 +2,13 @@
  * Imports
  */
 
-import thunkify from './util/thunkify'
-import textify from './util/textify'
+import isUndefined from 'is-undefined'
 
 /**
  * Vnode creator
  */
 
-function element (tag, attrs) {
+function element (type, attrs) {
   const len = arguments.length
   const children = []
 
@@ -18,25 +17,20 @@ function element (tag, attrs) {
   }
 
   let key
-  if (attrs !== null && typeof attrs.key !== 'undefined') {
+  if (attrs && !isUndefined(attrs.key)) {
     key = attrs.key
     if (Object.keys(attrs).length === 1) {
-      attrs = null
+      attrs = undefined
     } else {
-      attrs.key = null
+      attrs.key = undefined
     }
-  }
-
-  if (typeof tag !== 'string') {
-    return thunkify(tag, attrs, children, key)
   }
 
   return {
     key,
-    tag,
+    type,
     attrs,
-    children,
-    el: null
+    children
   }
 }
 
@@ -60,7 +54,7 @@ function filterFlatten (item, arr, arrStart) {
       return 0
     case 'string':
     case 'number':
-      arr[arrStart] = textify(item)
+      arr[arrStart] = element('#text', {nodeValue: item})
       break
     default:
       arr[arrStart] = item

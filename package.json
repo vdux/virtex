@@ -16,6 +16,8 @@
     "dift": "^0.1.9",
     "envify": "^3.4.0",
     "foreach": "github:micro-js/foreach",
+    "is-string": "github:micro-js/is-string",
+    "is-undefined": "github:micro-js/is-undefined",
     "redux": "^3.0.4",
     "standard": "^5.3.1",
     "tap-dev-tool": "^1.3.0",

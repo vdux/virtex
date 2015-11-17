@@ -2,144 +2,76 @@
  * Action types
  */
 
-const CREATE_TEXT_NODE = 'CREATE_TEXT_NODE'
-const CREATE_ELEMENT = 'CREATE_ELEMENT'
-const SET_ATTRIBUTE = 'SET_ATTRIBUTE'
-const REMOVE_ATTRIBUTE = 'REMOVE_ATTRIBUTE'
-const APPEND_CHILD = 'APPEND_CHILD'
-const REMOVE_CHILD = 'REMOVE_CHILD'
-const REPLACE_CHILD = 'REPLACE_CHILD'
-const INSERT_BEFORE = 'INSERT_BEFORE'
-const CREATE_THUNK = 'CREATE_THUNK'
-const UPDATE_THUNK = 'UPDATE_THUNK'
-const DESTROY_THUNK = 'DESTROY_THUNK'
+const types = {
+  CREATE_ELEMENT: 'CREATE_ELEMENT',
+  SET_ATTRIBUTE: 'SET_ATTRIBUTE',
+  REMOVE_ATTRIBUTE: 'REMOVE_ATTRIBUTE',
+  APPEND_CHILD: 'APPEND_CHILD',
+  REPLACE_NODE: 'REPLACE_NODE',
+  REMOVE_NODE: 'REMOVE_NODE',
+  INSERT_BEFORE: 'INSERT_BEFORE',
+  CREATE_THUNK: 'CREATE_THUNK',
+  UPDATE_THUNK: 'UPDATE_THUNK',
+  DESTROY_THUNK: 'DESTROY_THUNK'
+}
 
 /**
  * Action creators for effectful things
  */
 
-function createTextNode (text) {
-  return {
-    type: CREATE_TEXT_NODE,
-    text
-  }
+function vnodeAction (type) {
+  return (vnode, prev) => ({
+    type,
+    vnode,
+    prev
+  })
 }
 
-function createElement (vnode) {
-  return {
-    type: CREATE_ELEMENT,
-    vnode
-  }
-}
+const createElement = vnodeAction(types.CREATE_ELEMENT)
+const createThunk = vnodeAction(types.CREATE_THUNK)
+const updateThunk = vnodeAction(types.UPDATE_THUNK)
+const destroyThunk = vnodeAction(types.DESTROY_THUNK)
 
-function setAttribute (node, name, value) {
-  return {
-    type: SET_ATTRIBUTE,
+function attrAction (type) {
+  return (node, name, value) => ({
+    type,
     node,
     name,
     value
-  }
+  })
 }
 
-function removeAttribute (node, name) {
-  return {
-    type: REMOVE_ATTRIBUTE,
+const setAttribute = attrAction(types.SET_ATTRIBUTE)
+const removeAttribute = attrAction(types.REMOVE_ATTRIBUTE)
+
+function nodeAction (type) {
+  return (node, newNode, oldNode) => ({
+    type,
     node,
-    name,
-    value: null
-  }
+    newNode,
+    oldNode
+  })
 }
 
-function appendChild (node, newChild) {
-  return {
-    type: APPEND_CHILD,
-    node,
-    oldChild: null,
-    newChild
-  }
-}
-
-function replaceChild (node, newChild, oldChild) {
-  return {
-    type: REPLACE_CHILD,
-    node,
-    oldChild,
-    newChild
-  }
-}
-
-function removeChild (node, oldChild) {
-  return {
-    type: REMOVE_CHILD,
-    node,
-    oldChild,
-    // Set newChild to null to try to ensure that as many of these actions
-    // have the same object shape as possible, which should allow v8
-    // to optimize them a bit better
-    newChild: null
-  }
-}
-
-function insertBefore (node, newChild, oldChild) {
-  return {
-    type: INSERT_BEFORE,
-    node,
-    oldChild,
-    newChild
-  }
-}
-
-function createThunk (thunk) {
-  return {
-    type: CREATE_THUNK,
-    thunk
-  }
-}
-
-function updateThunk (thunk, prev) {
-  return {
-    type: UPDATE_THUNK,
-    thunk,
-    prev
-  }
-}
-
-function destroyThunk (thunk) {
-  return {
-    type: DESTROY_THUNK,
-    thunk
-  }
-}
+const appendChild = nodeAction(types.APPEND_CHILD)
+const replaceNode = nodeAction(types.REPLACE_NODE)
+const removeNode = nodeAction(types.REMOVE_NODE)
+const insertBefore = nodeAction(types.INSERT_BEFORE)
 
 /**
  * Exports
  */
 
-const types = {
-  CREATE_TEXT_NODE,
-  CREATE_ELEMENT,
-  SET_ATTRIBUTE,
-  REMOVE_ATTRIBUTE,
-  APPEND_CHILD,
-  REPLACE_CHILD,
-  REMOVE_CHILD,
-  INSERT_BEFORE,
-  CREATE_THUNK,
-  UPDATE_THUNK,
-  DESTROY_THUNK
-}
-
 export {
-  createTextNode,
   createElement,
   setAttribute,
   removeAttribute,
   appendChild,
-  replaceChild,
-  removeChild,
+  replaceNode ,
+  removeNode,
   insertBefore,
-  createThunk,
-  updateThunk,
+  createThunk ,
+  updateThunk ,
   destroyThunk,
 
   types
