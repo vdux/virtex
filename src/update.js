@@ -5,8 +5,8 @@
 import isString from 'is-string'
 import isUndefined from 'is-undefined'
 import forEach from 'foreach'
-import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
 import _create from './create'
+import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
 
 /**
@@ -73,9 +73,9 @@ function update (effect) {
           case UPDATE:
             return updateRecursive(pItem, nItem, path, pos)
           case CREATE:
-            return effect(insertBefore(node, create(nItem, path, pos), node.childNodes[pos] || null))
+            return effect(insertBefore(node, create(nItem, path, pos), pos))
           case MOVE:
-            return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), node.childNodes[pos] || null))
+            return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), pos))
           case REMOVE:
             unrenderThunks(pItem)
             return effect(removeNode(nativeElement(pItem)))

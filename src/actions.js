@@ -56,7 +56,15 @@ function nodeAction (type) {
 const appendChild = nodeAction(types.APPEND_CHILD)
 const replaceNode = nodeAction(types.REPLACE_NODE)
 const removeNode = nodeAction(types.REMOVE_NODE)
-const insertBefore = nodeAction(types.INSERT_BEFORE)
+
+function insertBefore (node, newNode, pos) {
+  return {
+    type: types.INSERT_BEFORE,
+    node,
+    newNode,
+    pos
+  }
+}
 
 /**
  * Exports
