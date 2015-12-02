@@ -20,8 +20,8 @@ function update (effect) {
   function updateRecursive (prev, next, path, idx) {
     const ptype = prev.type
     const ntype = next.type
-    const pattrs = prev.attrs
-    const nattrs = next.attrs
+    const pattrs = prev.props
+    const nattrs = next.props
     const node = next.el = prev.el
 
     if (ptype !== ntype) {

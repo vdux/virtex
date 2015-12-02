@@ -8,7 +8,7 @@ import isUndefined from 'is-undefined'
  * Vnode creator
  */
 
-function element (type, attrs) {
+function element (type, props) {
   const len = arguments.length
   const children = []
 
@@ -17,19 +17,19 @@ function element (type, attrs) {
   }
 
   let key
-  if (attrs && !isUndefined(attrs.key)) {
-    key = attrs.key
-    if (Object.keys(attrs).length === 1) {
-      attrs = undefined
+  if (props && !isUndefined(props.key)) {
+    key = props.key
+    if (Object.keys(props).length === 1) {
+      props = undefined
     } else {
-      attrs.key = undefined
+      props.key = undefined
     }
   }
 
   return {
     key,
     type,
-    attrs,
+    props,
     children
   }
 }
