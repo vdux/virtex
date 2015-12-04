@@ -14,7 +14,7 @@ function create (effect) {
 
   function createRecursive (vnode, path, idx) {
     while (!isString(vnode.type)) {
-      vnode.path = path = path + '.' + idx
+      vnode.path = path = path + '.' + (vnode.key || idx)
       vnode = effect(createThunk(vnode))
     }
 

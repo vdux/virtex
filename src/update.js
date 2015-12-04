@@ -40,7 +40,7 @@ function update (effect) {
 
       return node
     } else if (!isString(ntype)) {
-      next.path = path = path + '.' + idx
+      next.path = path = path + '.' + (next.key || idx)
       next = effect(updateThunk(next, prev))
       prev = prev.vnode
 
