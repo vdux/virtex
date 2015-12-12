@@ -2,9 +2,9 @@
  * Imports
  */
 
-import isString from 'is-string'
-import isUndefined from 'is-undefined'
-import forEach from 'foreach'
+import isString from '@micro-js/is-string'
+import isUndefined from '@micro-js/is-undefined'
+import forEach from '@micro-js/foreach'
 import _create from './create'
 import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
@@ -52,17 +52,17 @@ function update (effect) {
        * Diff attributes
        */
 
-      forEach(pattrs, (val, key) => {
+      forEach((val, key) => {
         if (!nattrs || isUndefined(nattrs[key])) {
           effect(removeAttribute(node, key))
         }
-      })
+      }, pattrs)
 
-      forEach(nattrs, (val, key) => {
+      forEach((val, key) => {
         if (!pattrs || val !== pattrs[key]) {
           effect(setAttribute(node, key, val))
         }
-      })
+      }, nattrs)
 
       /**
        * Diff children
