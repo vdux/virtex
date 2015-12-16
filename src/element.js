@@ -2,7 +2,7 @@
  * Imports
  */
 
-import isUndefined from '@micro-js/is-undefined'
+import isUndefined from '@f/is-undefined'
 
 /**
  * Vnode creator

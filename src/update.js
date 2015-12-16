@@ -2,9 +2,9 @@
  * Imports
  */
 
-import isString from '@micro-js/is-string'
-import isUndefined from '@micro-js/is-undefined'
-import forEach from '@micro-js/foreach'
+import isString from '@f/is-string'
+import isUndefined from '@f/is-undefined'
+import forEach from '@f/foreach'
 import _create from './create'
 import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'

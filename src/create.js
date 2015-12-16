@@ -2,7 +2,7 @@
  * Imports
  */
 
-import isString from '@micro-js/is-string'
+import isString from '@f/is-string'
 import {createElement, createThunk} from './actions'
 
 /**
