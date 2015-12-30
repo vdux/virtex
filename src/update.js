@@ -2,12 +2,10 @@
  * Imports
  */
 
-import isString from '@f/is-string'
-import isUndefined from '@f/is-undefined'
-import forEach from '@f/foreach'
-import _create from './create'
-import {setAttribute, removeAttribute, replaceNode, removeNode, insertBefore, createThunk, updateThunk, destroyThunk} from './actions'
+import {insertBefore, updateNode, replaceNode, removeNode, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
+import {isThunk, isSameNode, key} from './util'
+import _create from './create'
 
 /**
  * Diff and render two vnode trees
@@ -17,52 +15,24 @@ function update (effect) {
   const create = _create(effect)
   return (prev, next) => updateRecursive(prev, next, '0', 0)
 
-  function updateRecursive (prev, next, path, idx) {
-    const ptype = prev.type
-    const ntype = next.type
-    const pattrs = prev.props
-    const nattrs = next.props
-    const node = next.el = prev.el
+  function updateRecursive (prev, next, path) {
+    next.path = path
 
-    if (ptype !== ntype) {
-      if (!isString(ptype)) {
-        prev = unrenderThunks(prev)
+    if (!isSameNode(prev, next)) {
+      if (isThunk(prev)) {
+        prev = destroyThunk(prev)
       }
 
-      const oldNode = prev.el
-      const newNode = next.el = create(next)
-      effect(replaceNode(oldNode, newNode))
-      return newNode
-    } else if (ntype === '#text') {
-      if (nattrs.nodeValue !== pattrs.nodeValue) {
-        effect(setAttribute(node, 'nodeValue', nattrs.nodeValue))
-      }
-
-      return node
-    } else if (!isString(ntype)) {
-      next.path = path = path + '.' + (next.key || idx)
+      return effect(replaceNode(prev, create(next, path)))
+    } else if (isThunk(next)) {
       next = effect(updateThunk(next, prev))
-      prev = prev.vnode
+      prev = effect(updateThunk(prev))
 
       return prev === next
-        ? next.el = prev.el
+        ? next
         : updateRecursive(prev, next, path, 0)
     } else {
-      /**
-       * Diff attributes
-       */
-
-      forEach((val, key) => {
-        if (!nattrs || isUndefined(nattrs[key])) {
-          effect(removeAttribute(node, key))
-        }
-      }, pattrs)
-
-      forEach((val, key) => {
-        if (!pattrs || val !== pattrs[key]) {
-          effect(setAttribute(node, key, val))
-        }
-      }, nattrs)
+      effect(updateNode(prev, next))
 
       /**
        * Diff children
@@ -71,45 +41,18 @@ function update (effect) {
       diff(prev.children, next.children, (type, pItem, nItem, pos) => {
         switch (type) {
           case UPDATE:
-            return updateRecursive(pItem, nItem, path, pos)
+            return updateRecursive(pItem, nItem, path + '.' + pos)
           case CREATE:
-            return effect(insertBefore(node, create(nItem, path, pos), pos))
+            return effect(insertNode(node, create(nItem, path + '.' + pos), pos))
           case MOVE:
-            return effect(insertBefore(node, updateRecursive(pItem, nItem, path, pos), pos))
+            return effect(insertNode(node, updateRecursive(pItem, nItem, path + '.' + pos), pos))
           case REMOVE:
-            unrenderThunks(pItem)
-            return effect(removeNode(nativeElement(pItem)))
+            destroyThunk(pItem)
+            return effect(removeNode(pItem))
         }
       }, key)
 
-      return node
-    }
-  }
-
-  function key (vnode) {
-    return vnode.key
-  }
-
-  function nativeElement (vnode) {
-    while (vnode.vnode) vnode = vnode.vnode
-    return vnode.el
-  }
-
-  function unrenderThunks (vnode) {
-    while (vnode.vnode) {
-      effect(destroyThunk(vnode))
-      vnode = vnode.vnode
-    }
-
-    unrenderChildren(vnode)
-    return vnode
-  }
-
-  function unrenderChildren (vnode) {
-    const children = vnode.children
-
-    for (let i = 0, len = children.length; i < len; ++i) {
-      unrenderThunks(children[i])
+      return next
     }
   }
 }

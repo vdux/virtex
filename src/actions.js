@@ -3,13 +3,11 @@
  */
 
 const types = {
-  CREATE_ELEMENT: 'CREATE_ELEMENT',
-  SET_ATTRIBUTE: 'SET_ATTRIBUTE',
-  REMOVE_ATTRIBUTE: 'REMOVE_ATTRIBUTE',
-  APPEND_CHILD: 'APPEND_CHILD',
+  CREATE_NODE: 'CREATE_NODE',
+  UPDATE_NODE: 'UPDATE_NODE',
   REPLACE_NODE: 'REPLACE_NODE',
   REMOVE_NODE: 'REMOVE_NODE',
-  INSERT_BEFORE: 'INSERT_BEFORE',
+  INSERT_NODE: 'INSERT_NODE',
   CREATE_THUNK: 'CREATE_THUNK',
   UPDATE_THUNK: 'UPDATE_THUNK',
   DESTROY_THUNK: 'DESTROY_THUNK'
@@ -27,22 +25,10 @@ function vnodeAction (type) {
   })
 }
 
-const createElement = vnodeAction(types.CREATE_ELEMENT)
+const createNode = vnodeAction(types.CREATE_NODE)
 const createThunk = vnodeAction(types.CREATE_THUNK)
 const updateThunk = vnodeAction(types.UPDATE_THUNK)
 const destroyThunk = vnodeAction(types.DESTROY_THUNK)
-
-function attrAction (type) {
-  return (node, name, value) => ({
-    type,
-    node,
-    name,
-    value
-  })
-}
-
-const setAttribute = attrAction(types.SET_ATTRIBUTE)
-const removeAttribute = attrAction(types.REMOVE_ATTRIBUTE)
 
 function nodeAction (type) {
   return (node, newNode, oldNode) => ({
@@ -53,13 +39,13 @@ function nodeAction (type) {
   })
 }
 
-const appendChild = nodeAction(types.APPEND_CHILD)
+const updateNode = nodeAction(types.UPDATE_NODE)
 const replaceNode = nodeAction(types.REPLACE_NODE)
 const removeNode = nodeAction(types.REMOVE_NODE)
 
-function insertBefore (node, newNode, pos) {
+function insertNode (node, newNode, pos) {
   return {
-    type: types.INSERT_BEFORE,
+    type: types.INSERT_NODE,
     node,
     newNode,
     pos
@@ -71,13 +57,11 @@ function insertBefore (node, newNode, pos) {
  */
 
 export {
-  createElement,
-  setAttribute,
-  removeAttribute,
-  appendChild,
+  createNode,
+  insertNode,
+  updateNode,
   replaceNode ,
   removeNode,
-  insertBefore,
   createThunk ,
   updateThunk ,
   destroyThunk,

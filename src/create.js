@@ -2,30 +2,30 @@
  * Imports
  */
 
-import isString from '@f/is-string'
-import {createElement, createThunk} from './actions'
+import {isThunk} from './util'
+import {createNode, createThunk} from './actions'
 
 /**
  * Create the initial document fragment
  */
 
 function create (effect) {
-  return (vnode, path = '0', idx = 0) => createRecursive(vnode, path, idx)
+  return (vnode, path = '0') => createRecursive(vnode, path, idx)
 
-  function createRecursive (vnode, path, idx) {
-    while (!isString(vnode.type)) {
-      vnode.path = path = path + '.' + (vnode.key || idx)
-      vnode = effect(createThunk(vnode))
+  function createRecursive (vnode, path) {
+    vnode.path = path
+
+    if (isThunk(vnode)) {
+      return createRecursive(effect(createThunk(vnode)), vnode.path + '.0')
     }
 
-    const vchildren = vnode.children
+    const children = vnode.children
 
-    for (let i = 0, len = vchildren.length; i < len; ++i) {
-      const child = vchildren[i]
-      child.el = createRecursive(child, path, i)
+    for (let i = 0, len = children.length; i < len; ++i) {
+      createRecursive(children[i], path + '.' + i)
     }
 
-    return (vnode.el = effect(createElement(vnode)))
+    return effect(createNode(vnode))
   }
 }
 
