@@ -29,19 +29,9 @@ const createNode = vnodeAction(types.CREATE_NODE)
 const createThunk = vnodeAction(types.CREATE_THUNK)
 const updateThunk = vnodeAction(types.UPDATE_THUNK)
 const destroyThunk = vnodeAction(types.DESTROY_THUNK)
-
-function nodeAction (type) {
-  return (node, newNode, oldNode) => ({
-    type,
-    node,
-    newNode,
-    oldNode
-  })
-}
-
-const updateNode = nodeAction(types.UPDATE_NODE)
-const replaceNode = nodeAction(types.REPLACE_NODE)
-const removeNode = nodeAction(types.REMOVE_NODE)
+const updateNode = vnodeAction(types.UPDATE_NODE)
+const replaceNode = vnodeAction(types.REPLACE_NODE)
+const removeNode = vnodeAction(types.REMOVE_NODE)
 
 function insertNode (node, newNode, pos) {
   return {
@@ -60,10 +50,10 @@ export {
   createNode,
   insertNode,
   updateNode,
-  replaceNode ,
+  replaceNode,
   removeNode,
-  createThunk ,
-  updateThunk ,
+  createThunk,
+  updateThunk,
   destroyThunk,
 
   types

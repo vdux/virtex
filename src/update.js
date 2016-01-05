@@ -2,7 +2,7 @@
  * Imports
  */
 
-import {insertBefore, updateNode, replaceNode, removeNode, updateThunk, destroyThunk} from './actions'
+import {insertNode, updateNode, replaceNode, removeNode, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
 import {isThunk, isSameNode, key} from './util'
 import _create from './create'
@@ -19,10 +19,7 @@ function update (effect) {
     next.path = path
 
     if (!isSameNode(prev, next)) {
-      if (isThunk(prev)) {
-        prev = destroyThunk(prev)
-      }
-
+      unrenderThunks(prev)
       return effect(replaceNode(prev, create(next, path)))
     } else if (isThunk(next)) {
       next = effect(updateThunk(next, prev))
@@ -47,13 +44,28 @@ function update (effect) {
           case MOVE:
             return effect(insertNode(node, updateRecursive(pItem, nItem, path + '.' + pos), pos))
           case REMOVE:
-            destroyThunk(pItem)
+            unrenderThunks(pItem)
             return effect(removeNode(pItem))
         }
       }, key)
 
       return next
     }
+  }
+
+  function unrenderThunks (vnode) {
+    while (isThunk(vnode)) {
+      effect(destroyThunk(vnode))
+      vnode = effect(updateThunk(vnode))
+    }
+
+    const children = vnode.children
+
+    for (let i = 0, len = children.length; i < len; ++i) {
+      unrenderThunks(children[i])
+    }
+
+    return vnode
   }
 }
 
