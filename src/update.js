@@ -4,7 +4,8 @@
 
 import {insertNode, updateNode, replaceNode, removeNode, updateThunk, destroyThunk} from './actions'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
-import {isThunk, isSameNode, key} from './util'
+import {isThunk, isSameNode, getKey} from './util'
+import forEach from '@f/foreach'
 import _create from './create'
 
 /**
@@ -13,7 +14,7 @@ import _create from './create'
 
 function update (effect) {
   const create = _create(effect)
-  return (prev, next) => updateRecursive(prev, next, '0', 0)
+  return (prev, next) => updateRecursive(prev, next, '0')
 
   function updateRecursive (prev, next, path) {
     next.path = path
@@ -27,7 +28,7 @@ function update (effect) {
 
       return prev === next
         ? next
-        : updateRecursive(prev, next, path, 0)
+        : updateRecursive(prev, next, path + '.0')
     } else {
       effect(updateNode(prev, next))
 
@@ -36,18 +37,21 @@ function update (effect) {
        */
 
       diff(prev.children, next.children, (type, pItem, nItem, pos) => {
+        const key = isUndefined(nItem.key) ? pos : nItem.key
+        const subpath = path + '.' + key
+
         switch (type) {
           case UPDATE:
-            return updateRecursive(pItem, nItem, path + '.' + pos)
+            return updateRecursive(pItem, nItem, subpath)
           case CREATE:
-            return effect(insertNode(node, create(nItem, path + '.' + pos), pos))
+            return effect(insertNode(node, create(nItem, subpath), pos))
           case MOVE:
-            return effect(insertNode(node, updateRecursive(pItem, nItem, path + '.' + pos), pos))
+            return effect(insertNode(node, updateRecursive(pItem, nItem, subpath), pos))
           case REMOVE:
             unrenderThunks(pItem)
             return effect(removeNode(pItem))
         }
-      }, key)
+      }, getKey)
 
       return next
     }
@@ -59,13 +63,7 @@ function update (effect) {
       vnode = effect(updateThunk(vnode))
     }
 
-    const children = vnode.children
-
-    for (let i = 0, len = children.length; i < len; ++i) {
-      unrenderThunks(children[i])
-    }
-
-    return vnode
+    forEach(vnode.children, unrenderThunks)
   }
 }
 

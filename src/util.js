@@ -16,7 +16,7 @@ function isSameNode (a, b) {
   return a.type === b.type
 }
 
-function key (a) {
+function getKey (a) {
   return a.key
 }
 
@@ -27,5 +27,5 @@ function key (a) {
 export default {
   isThunk,
   isSameNode,
-  key
+  getKey
 }

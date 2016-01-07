@@ -33,11 +33,11 @@ const updateNode = vnodeAction(types.UPDATE_NODE)
 const replaceNode = vnodeAction(types.REPLACE_NODE)
 const removeNode = vnodeAction(types.REMOVE_NODE)
 
-function insertNode (node, newNode, pos) {
+function insertNode (vnode, newVnode, pos) {
   return {
     type: types.INSERT_NODE,
-    node,
-    newNode,
+    vnode,
+    newVnode,
     pos
   }
 }
