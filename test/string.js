@@ -15,13 +15,14 @@ import component from 'virtex-component'
 
 const store = applyMiddleware(string, component)(createStore)(() => {}, {})
 const {create} = virtex(store.dispatch)
+const render = vnode => create(vnode).element
 
 /**
  * Tests
  */
 
 test('rendering virtual element to a string', t => {
-  t.equal(create(<Component />), '<div id="foo"><span>foo</span><span>foo</span></div>', 'element rendered')
+  t.equal(render(<Component />), '<div id="foo"><span>foo</span><span>foo</span></div>', 'element rendered')
   t.end()
 
   function Other ({props}) {
@@ -39,8 +40,8 @@ test('rendering virtual element to a string', t => {
 })
 
 test('rendering components with children', t => {
-  t.notEqual(create(<Component />), '<div>undefined</div>')
-  t.equal(create(<Component>test</Component>), '<div>test</div>')
+  t.notEqual(render(<Component />), '<div>undefined</div>')
+  t.equal(render(<Component>test</Component>), '<div>test</div>')
   t.end()
 
   function Component ({children}) {
@@ -61,7 +62,7 @@ test('rendering components with children', t => {
 //     }
 //   }
 
-//   t.equal(create(<Component name="Amanda" initialCount={0} />), '<div count="0">Hello Amanda</div>', 'rendered correctly')
+//   t.equal(render(<Component name="Amanda" initialCount={0} />), '<div count="0">Hello Amanda</div>', 'rendered correctly')
 //   t.end()
 // })
 
@@ -77,7 +78,7 @@ test('renderString: lifecycle hooks', t => {
     }
   }
 
-  create(<Component />)
+  render(<Component />)
   t.ok(~called.indexOf('beforeMount'), 'beforeMount called')
   t.end()
 })
@@ -88,37 +89,37 @@ test('renderString: lifecycle hooks', t => {
 // })
 
 test('renderString: input.value', t => {
-  t.equal(create(<input value='foo' />), '<input value="foo"></input>', 'value rendered')
+  t.equal(render(<input value='foo' />), '<input value="foo"></input>', 'value rendered')
   t.end()
 })
 
 test('renderString: function attributes', t => {
   function foo() { return 'blah' }
-  t.equal(create(<div onClick={foo} />), '<div></div>', 'attribute not rendered')
+  t.equal(render(<div onClick={foo} />), '<div></div>', 'attribute not rendered')
   t.end()
 })
 
 test('renderString: empty attributes', t => {
   t.equal(
-    create(<input type='checkbox' value='' />),
+    render(<input type='checkbox' value='' />),
     '<input type="checkbox" value=""></input>',
     'empty string attribute not rendered'
   )
 
   t.equal(
-    create(<input type='checkbox' value={0} />),
+    render(<input type='checkbox' value={0} />),
     '<input type="checkbox" value="0"></input>',
     'zero attribute not rendered'
   )
 
   t.equal(
-    create(<input type="checkbox" disabled={false} />),
+    render(<input type="checkbox" disabled={false} />),
     '<input type="checkbox"></input>',
     'false attribute unexpectedly rendered'
   )
 
   t.equal(
-    create(<input type="checkbox" disabled={null} />),
+    render(<input type="checkbox" disabled={null} />),
     '<input type="checkbox"></input>',
     'null attribute unexpectedly rendered'
   )
@@ -126,7 +127,7 @@ test('renderString: empty attributes', t => {
   const disabled = undefined
 
   t.equal(
-    create(<input type="checkbox" disabled={disabled} />),
+    render(<input type="checkbox" disabled={disabled} />),
     '<input type="checkbox"></input>',
     'undefined attribute unexpectedly rendered'
   )

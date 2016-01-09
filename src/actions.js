@@ -25,13 +25,20 @@ function vnodeAction (type) {
   })
 }
 
-const createNode = vnodeAction(types.CREATE_NODE)
 const createThunk = vnodeAction(types.CREATE_THUNK)
 const updateThunk = vnodeAction(types.UPDATE_THUNK)
 const destroyThunk = vnodeAction(types.DESTROY_THUNK)
 const updateNode = vnodeAction(types.UPDATE_NODE)
 const replaceNode = vnodeAction(types.REPLACE_NODE)
 const removeNode = vnodeAction(types.REMOVE_NODE)
+
+function createNode (vnode, children) {
+  return {
+    type: types.CREATE_NODE,
+    vnode,
+    children
+  }
+}
 
 function insertNode (vnode, newVnode, pos) {
   return {

@@ -16,7 +16,7 @@ import delegant from 'delegant'
  * Setup store
  */
 
-const store = applyMiddleware(dom(document), component)(createStore)(() => {}, {})
+const store = applyMiddleware(dom, component)(createStore)(() => {}, {})
 
 /**
  * Initialize virtex
@@ -47,9 +47,9 @@ function setup (equal) {
   let node
   return {
     mount (vnode) {
-      if (tree) node = update(tree, vnode)
+      if (tree) node = update(tree, vnode).element
       else {
-        node = create(vnode)
+        node = create(vnode).element
         el.appendChild(node)
       }
 

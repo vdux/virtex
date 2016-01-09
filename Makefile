@@ -6,7 +6,7 @@ BIN = ./node_modules/.bin
 .DEFAULT_GOAL := all
 
 src = $(shell find src/*.js)
-tests = $(shell find test/**/*.js)
+tests = $(shell find test/*.js)
 
 #
 # Tasks

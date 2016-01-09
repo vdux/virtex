@@ -3,8 +3,8 @@
  */
 
 import {insertNode, updateNode, replaceNode, removeNode, updateThunk, destroyThunk} from './actions'
+import {isThunk, isSameNode, getKey, createPath} from './util'
 import diff, {CREATE, UPDATE, MOVE, REMOVE} from 'dift'
-import {isThunk, isSameNode, getKey} from './util'
 import forEach from '@f/foreach'
 import _create from './create'
 
@@ -21,40 +21,42 @@ function update (effect) {
 
     if (!isSameNode(prev, next)) {
       unrenderThunks(prev)
-      return effect(replaceNode(prev, create(next, path)))
+
+      while (isThunk(prev)) {
+        prev = effect(updateThunk(prev))
+      }
+
+      next = create(next, path)
+      effect(replaceNode(next, prev))
     } else if (isThunk(next)) {
       next = effect(updateThunk(next, prev))
       prev = effect(updateThunk(prev))
 
-      return prev === next
-        ? next
-        : updateRecursive(prev, next, path + '.0')
+      return updateRecursive(prev, next, createPath(next, path, 0))
     } else {
-      effect(updateNode(prev, next))
+      if (prev !== next) {
+        /**
+         * Diff children
+         */
 
-      /**
-       * Diff children
-       */
+        diff(prev.children, next.children, (type, pItem, nItem, pos) => {
+          switch (type) {
+            case UPDATE:
+              return updateRecursive(pItem, nItem, createPath(nItem, path, pos))
+            case CREATE:
+              return effect(insertNode(prev, create(nItem, createPath(nItem, path, pos)), pos))
+            case MOVE:
+              return effect(insertNode(prev, updateRecursive(pItem, nItem, createPath(nItem, path, pos)), pos))
+            case REMOVE:
+              return effect(removeNode(unrenderThunks(pItem)))
+          }
+        }, getKey)
+      }
 
-      diff(prev.children, next.children, (type, pItem, nItem, pos) => {
-        const key = isUndefined(nItem.key) ? pos : nItem.key
-        const subpath = path + '.' + key
-
-        switch (type) {
-          case UPDATE:
-            return updateRecursive(pItem, nItem, subpath)
-          case CREATE:
-            return effect(insertNode(node, create(nItem, subpath), pos))
-          case MOVE:
-            return effect(insertNode(node, updateRecursive(pItem, nItem, subpath), pos))
-          case REMOVE:
-            unrenderThunks(pItem)
-            return effect(removeNode(pItem))
-        }
-      }, getKey)
-
-      return next
+      effect(updateNode(next, prev))
     }
+
+    return next
   }
 
   function unrenderThunks (vnode) {
@@ -63,7 +65,8 @@ function update (effect) {
       vnode = effect(updateThunk(vnode))
     }
 
-    forEach(vnode.children, unrenderThunks)
+    forEach(unrenderThunks, vnode.children)
+    return vnode
   }
 }
 
