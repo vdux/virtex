@@ -371,21 +371,6 @@ test('simple components', t => {
   t.end()
 })
 
-test.skip('nested root components should not have an element', t => {
-  const {el, renderer, mount, html} = setup(t.equal)
-  const Box = ({props}) => <div>{props.text}</div>
-  const Container = {
-    render: () => <Box text="hello" />,
-    afterMount: ({props}, el) => {
-      t.equal(el, undefined)
-    }
-  }
-
-  mount(<Container />)
-  teardown({renderer, el})
-  t.end()
-})
-
 test('nested component lifecycle hooks fire in the correct order', t => {
   const {el, renderer, mount} = setup(t.equal)
   let log = []
@@ -395,11 +380,11 @@ test('nested component lifecycle hooks fire in the correct order', t => {
       log.push(props.name + ' render')
       return <div>{children}</div>
     },
-    afterMount ({props}) {
-      log.push(props.name + ' afterMount')
+    onCreate ({props}) {
+      log.push(props.name + ' onCreate')
     },
-    beforeUnmount ({props}) {
-      log.push(props.name + ' beforeUnmount')
+    onRemove ({props}) {
+      log.push(props.name + ' onRemove')
     },
     shouldUpdate () {
       return true
@@ -417,12 +402,12 @@ test('nested component lifecycle hooks fire in the correct order', t => {
   )
 
   t.deepEqual(log, [
+    'GrandParent onCreate',
     'GrandParent render',
+    'Parent onCreate',
     'Parent render',
-    'Child render',
-    'Child afterMount',
-    'Parent afterMount',
-    'GrandParent afterMount'
+    'Child onCreate',
+    'Child render'
   ], 'initial render')
   log = []
 
@@ -446,10 +431,10 @@ test('nested component lifecycle hooks fire in the correct order', t => {
   mount(<Wrapper></Wrapper>)
 
   t.deepEqual(log, [
-    'GrandParent beforeUnmount',
-    'Parent beforeUnmount',
-    'Child beforeUnmount'
-  ], 'unmounted with app.unmount()')
+    'GrandParent onRemove',
+    'Parent onRemove',
+    'Child onRemove'
+  ], 'unmounted')
 
   mount(
     <Wrapper>
@@ -465,10 +450,10 @@ test('nested component lifecycle hooks fire in the correct order', t => {
   teardown({renderer, el})
 
   t.deepEqual(log, [
-    'GrandParent beforeUnmount',
-    'Parent beforeUnmount',
-    'Child beforeUnmount'
-  ], 'unmounted with renderer.remove()')
+    'GrandParent onRemove',
+    'Parent onRemove',
+    'Child onRemove'
+  ], 'unmounted')
 
   t.end()
 })
@@ -477,18 +462,15 @@ test('component lifecycle hook signatures', t => {
   const {mount, renderer, el} = setup(t.equal)
 
   const MyComponent = {
-    validate ({props}) {
-      t.ok(props, 'validate has props')
-    },
     render ({props}) {
       t.ok(props, 'render has props')
       return <div id="foo" />
     },
-    afterMount ({props}) {
-      t.ok(props, 'afterMount has props')
+    onCreate ({props}) {
+      t.ok(props, 'onCreate has props')
     },
-    beforeUnmount ({props}) {
-      t.ok(props, 'beforeUnmount has props')
+    onRemove ({props}) {
+      t.ok(props, 'onRemove has props')
       t.end()
     }
   }
@@ -542,21 +524,21 @@ test(`should update all children when a parent component changes`, t => {
 
 test.skip('batched rendering', t => {
   let i = 0
-  const IncrementAfterUpdate = {
+  const IncrementOnUpdate = {
     render: function(){
       return <div></div>
     },
-    afterUpdate: function(){
+    onUpdate: function(){
       i++
     }
   }
 
   const el = document.createElement('div')
   const app = deku()
-  app.mount(<IncrementAfterUpdate text="one" />)
+  app.mount(<IncrementOnUpdate text="one" />)
   const renderer = render(app, el)
-  app.mount(<IncrementAfterUpdate text="two" />)
-  app.mount(<IncrementAfterUpdate text="three" />)
+  app.mount(<IncrementOnUpdate text="two" />)
+  app.mount(<IncrementOnUpdate text="three" />)
   raf(() => {
     t.equal(i, 1, 'rendered *once* on the next frame')
     renderer.remove()
@@ -613,8 +595,8 @@ test('firing mount events on sub-components created later', t => {
   const {mount, renderer, el} = setup(t.equal)
   const ComponentA = {
     render: () => <div />,
-    beforeUnmount: () => t.pass('beforeUnmount called'),
-    afterMount: () => t.pass('afterMount called')
+    onRemove: () => t.pass('onRemove called'),
+    onCreate: () => t.pass('onCreate called')
   }
 
   t.plan(2)
@@ -728,7 +710,7 @@ test('unmounting components when removing an element', t => {
 
   const Test = {
     render:        () => <div />,
-    beforeUnmount: () => t.pass('component was unmounted')
+    onRemove: () => t.pass('component was unmounted')
   }
 
   t.plan(1)

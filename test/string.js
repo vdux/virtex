@@ -69,9 +69,9 @@ test('rendering components with children', t => {
 test('renderString: lifecycle hooks', t => {
   const called = []
   const Component = {
-    beforeMount: function(props) {
-      called.push('beforeMount')
-      t.ok(props, 'beforeMount has props')
+    onCreate: function(props) {
+      called.push('onCreate')
+      t.ok(props, 'onCreate has props')
     },
     render: function(){
       return <div />
@@ -79,7 +79,7 @@ test('renderString: lifecycle hooks', t => {
   }
 
   render(<Component />)
-  t.ok(~called.indexOf('beforeMount'), 'beforeMount called')
+  t.ok(~called.indexOf('onCreate'), 'onCreate called')
   t.end()
 })
 
