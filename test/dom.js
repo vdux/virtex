@@ -16,7 +16,7 @@ import delegant from 'delegant'
  * Setup store
  */
 
-const store = applyMiddleware(dom, component)(createStore)(() => {}, {})
+const store = applyMiddleware(dom, component())(createStore)(() => {}, {})
 
 /**
  * Initialize virtex

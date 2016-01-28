@@ -13,7 +13,7 @@ import component from 'virtex-component'
  * Setup
  */
 
-const store = applyMiddleware(string, component)(createStore)(() => {}, {})
+const store = applyMiddleware(string, component())(createStore)(() => {}, {})
 const {create} = virtex(store.dispatch)
 const render = vnode => create(vnode).element
 

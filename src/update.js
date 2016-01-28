@@ -14,7 +14,7 @@ import _create from './create'
 
 function update (effect) {
   const create = _create(effect)
-  return (prev, next) => updateRecursive(prev, next, '0')
+  return (prev, next, path) => updateRecursive(prev, next, path || '0')
 
   function updateRecursive (prev, next, path) {
     next.path = path
@@ -33,25 +33,23 @@ function update (effect) {
       prev = effect(updateThunk(prev))
 
       return updateRecursive(prev, next, createPath(next, path, 0))
-    } else {
-      if (prev !== next) {
-        /**
-         * Diff children
-         */
+    } else if (prev !== next) {
+      /**
+       * Diff children
+       */
 
-        diff(prev.children, next.children, (type, pItem, nItem, pos) => {
-          switch (type) {
-            case UPDATE:
-              return updateRecursive(pItem, nItem, createPath(nItem, path, pos))
-            case CREATE:
-              return effect(insertNode(prev, create(nItem, createPath(nItem, path, pos)), pos))
-            case MOVE:
-              return effect(insertNode(prev, updateRecursive(pItem, nItem, createPath(nItem, path, pos)), pos))
-            case REMOVE:
-              return effect(removeNode(unrenderThunks(pItem)))
-          }
-        }, getKey)
-      }
+      diff(prev.children, next.children, (type, pItem, nItem, pos) => {
+        switch (type) {
+          case UPDATE:
+            return updateRecursive(pItem, nItem, createPath(nItem, path, pos))
+          case CREATE:
+            return effect(insertNode(prev, create(nItem, createPath(nItem, path, pos)), pos))
+          case MOVE:
+            return effect(insertNode(prev, updateRecursive(pItem, nItem, createPath(nItem, path, pos)), pos))
+          case REMOVE:
+            return effect(removeNode(unrenderThunks(pItem)))
+        }
+      }, getKey)
 
       effect(updateNode(next, prev))
     }
