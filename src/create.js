@@ -17,7 +17,8 @@ function create (effect) {
     vnode.path = path
 
     if (isThunk(vnode)) {
-      return createRecursive(effect(createThunk(vnode)), createPath(vnode, path, 0))
+      const next = effect(createThunk(vnode))
+      return createRecursive(next, createPath(next, path, 0))
     }
 
     const children = map((child, i) => createRecursive(child, createPath(child, path, i)), vnode.children)
