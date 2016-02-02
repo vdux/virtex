@@ -2,8 +2,8 @@
  * Imports
  */
 
-import {isThunk, createPath} from './util'
 import map from '@f/map-array'
+import {isThunk, createPath} from './util'
 import {createNode, createThunk} from './actions'
 
 /**
@@ -11,18 +11,27 @@ import {createNode, createThunk} from './actions'
  */
 
 function create (effect) {
-  return (vnode, path = '0') => createRecursive(vnode, path)
+  return (vnode, path = '0', element) => createRecursive(vnode, path, element)
 
-  function createRecursive (vnode, path) {
+  function createRecursive (vnode, path, element) {
     vnode.path = path
 
     if (isThunk(vnode)) {
       const next = effect(createThunk(vnode))
-      return createRecursive(next, createPath(next, path, 0))
+      return createRecursive(next, createPath(next, path, 0), element)
     }
 
-    const children = map((child, i) => createRecursive(child, createPath(child, path, i)), vnode.children)
-    return effect(createNode(vnode, children))
+    return effect(createNode(
+      vnode,
+      map(createChild(path, element), vnode.children),
+      element
+    ))
+  }
+
+  function createChild (path, element) {
+    return element
+      ? (child, i) => createRecursive(child, createPath(child, path, i), element.childNodes[i])
+      : (child, i) => createRecursive(child, createPath(child, path, i))
   }
 }
 

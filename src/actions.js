@@ -32,11 +32,12 @@ const updateNode = vnodeAction(types.UPDATE_NODE)
 const replaceNode = vnodeAction(types.REPLACE_NODE)
 const removeNode = vnodeAction(types.REMOVE_NODE)
 
-function createNode (vnode, children) {
+function createNode (vnode, children, element) {
   return {
     type: types.CREATE_NODE,
     vnode,
-    children
+    children,
+    element
   }
 }
 
