@@ -32,6 +32,10 @@ function update (effect) {
       next = effect(updateThunk(next, prev))
       prev = effect(updateThunk(prev))
 
+      if (!next) {
+        throw new Error('Component returned null/undefined. Components must return valid virtual nodes.')
+      }
+
       return updateRecursive(prev, next, createPath(next, path, 0))
     } else if (prev !== next) {
       /**

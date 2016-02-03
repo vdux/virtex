@@ -18,6 +18,11 @@ function create (effect) {
 
     if (isThunk(vnode)) {
       const next = effect(createThunk(vnode))
+
+      if (!next) {
+        throw new Error('Component returned null/undefined. Components must return valid virtual nodes.')
+      }
+      
       return createRecursive(next, createPath(next, path, 0), element)
     }
 
