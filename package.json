@@ -14,7 +14,8 @@
     "@f/is-string": "^1.1.1",
     "@f/is-undefined": "^1.1.1",
     "@f/map-array": "^1.2.1",
-    "dift": "^0.1.11"
+    "dift": "^0.1.11",
+    "virtex-component": "^0.3.1"
   },
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "^6.0.18",

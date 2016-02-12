@@ -49,6 +49,7 @@ function filterFlatten (item, arr, arrStart) {
         added += filterFlatten(item[i], arr, arrStart + added)
       }
       return added
+    case 'boolean':
     case 'null':
     case 'undefined':
       return 0
