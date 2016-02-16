@@ -42,20 +42,24 @@ function update (effect) {
        * Diff children
        */
 
+      const children = new Array(next.children.length)
       diff(prev.children, next.children, (type, pItem, nItem, pos) => {
         switch (type) {
           case UPDATE:
-            return updateRecursive(pItem, nItem, createPath(nItem, path, pos))
+            children[pos] = updateRecursive(pItem, nItem, createPath(nItem, path, pos))
+            return
           case CREATE:
-            return effect(insertNode(prev, create(nItem, createPath(nItem, path, pos)), pos))
+            children[pos] = create(nItem, createPath(nItem, path, pos))
+            return effect(insertNode(prev, children[pos], pos))
           case MOVE:
-            return effect(insertNode(prev, updateRecursive(pItem, nItem, createPath(nItem, path, pos)), pos))
+            children[pos] = updateRecursive(pItem, nItem, createPath(nItem, path, pos))
+            return effect(insertNode(prev, children[pos], pos))
           case REMOVE:
             return effect(removeNode(unrenderThunks(pItem)))
         }
       }, getKey)
 
-      effect(updateNode(next, prev))
+      effect(updateNode(next, prev, children))
     }
 
     return next

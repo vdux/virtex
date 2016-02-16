@@ -14,8 +14,24 @@ import component from 'virtex-component'
  */
 
 const store = applyMiddleware(string, component())(createStore)(() => {}, {})
-const {create} = virtex(store.dispatch)
-const render = vnode => create(vnode).element
+const {create, update} = virtex(store.dispatch)
+
+function mount () {
+  let prev
+
+  return function (vnode) {
+    const result = prev
+      ? update(prev, vnode).element
+      : create(vnode).element
+
+    prev = vnode
+    return result
+  }
+}
+
+function render (vnode) {
+  return mount()(vnode)
+}
 
 /**
  * Tests
@@ -133,4 +149,25 @@ test('renderString: empty attributes', t => {
   )
 
   t.end()
+})
+
+test('updating a virtual tree', t => {
+  const update = mount()
+
+  t.equal(update(<Component />), '<div id="foo"><span>foo</span><span>foo</span></div>', 'element rendered')
+  t.equal(update(<Component test='1' />), '<div id="foo"><span attr="1">foo</span><span>foo</span></div>')
+  t.end()
+
+  function Other ({props}) {
+    return <span>{props.text}</span>
+  }
+
+  function Component ({props}) {
+    return (
+      <div id="foo">
+        <span attr={props.test}>foo</span>
+        <Other text="foo" />
+      </div>
+    )
+  }
 })
