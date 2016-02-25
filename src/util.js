@@ -28,6 +28,12 @@ function createPath (vnode, path, pos) {
   return path + '.' + part
 }
 
+function findDOMNode (vnode) {
+  let p = vnode
+  while (isThunk(p)) p = p.vnode
+  return p.element
+}
+
 /**
  * Exports
  */
@@ -36,5 +42,6 @@ export {
   isThunk,
   isSameNode,
   createPath,
+  findDOMNode,
   getKey
 }
