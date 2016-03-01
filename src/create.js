@@ -11,7 +11,7 @@ import {createNode, createThunk} from './actions'
  */
 
 function create (effect) {
-  return (vnode, path = '0', element) => createRecursive(vnode, path, element)
+  return (vnode, path = 'a', element) => createRecursive(vnode, path, element)
 
   function createRecursive (vnode, path, element) {
     vnode.path = path
@@ -22,7 +22,7 @@ function create (effect) {
       if (!next) {
         throw new Error('Component returned null/undefined. Components must return valid virtual nodes.')
       }
-      
+
       return createRecursive(next, createPath(next, path, 0), element)
     }
 

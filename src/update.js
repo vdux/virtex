@@ -14,7 +14,7 @@ import _create from './create'
 
 function update (effect) {
   const create = _create(effect)
-  return (prev, next, path) => updateRecursive(prev, next, path || '0')
+  return (prev, next, path = 'a') => updateRecursive(prev, next, path)
 
   function updateRecursive (prev, next, path) {
     next.path = path
@@ -36,7 +36,9 @@ function update (effect) {
         throw new Error('Component returned null/undefined. Components must return valid virtual nodes.')
       }
 
-      return updateRecursive(prev, next, createPath(next, path, 0))
+      return next === prev
+        ? next
+        : updateRecursive(prev, next, createPath(next, path, 0))
     } else if (prev !== next) {
       /**
        * Diff children

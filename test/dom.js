@@ -966,7 +966,6 @@ test('array jsx', t => {
   t.end()
 })
 
-
 test('diff', t => {
   t.test('reverse', diffXf(r => r.reverse()))
   t.test('prepend (1)', diffXf(r => [11].concat(r)))
