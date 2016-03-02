@@ -36,9 +36,7 @@ function update (effect) {
         throw new Error('Component returned null/undefined. Components must return valid virtual nodes.')
       }
 
-      return next === prev
-        ? next
-        : updateRecursive(prev, next, createPath(next, path, 0))
+      return updateRecursive(prev, next, createPath(next, path, 0))
     } else if (prev !== next) {
       /**
        * Diff children
