@@ -966,6 +966,39 @@ test('array jsx', t => {
   t.end()
 })
 
+test('getProps', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  const vals = {}
+  function save (name) { return ({props}) => { vals[name] = props.value }}
+  const Test = {
+    getProps () {
+      return {
+        value: 1
+      }
+    },
+    onCreate: save('create'),
+    render ({props}) {
+      vals.render = props.value
+      return <span></span>
+    },
+    onUpdate: save('update'),
+    onRemove: save('remove'),
+    shouldUpdate () { return true }
+  }
+
+  mount(<Test value={3} />)
+  mount(<Test value={4} />)
+  mount(<span></span>)
+
+  t.equal(vals.create, 1, 'onCreate hook')
+  t.equal(vals.render, 1, 'render')
+  t.equal(vals.update, 1, 'onUpdate hook')
+  t.equal(vals.remove, 1, 'onRemove hook')
+
+  teardown({renderer, el})
+  t.end()
+})
+
 test('diff', t => {
   t.test('reverse', diffXf(r => r.reverse()))
   t.test('prepend (1)', diffXf(r => [11].concat(r)))
