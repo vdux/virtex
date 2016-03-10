@@ -2,21 +2,26 @@
  * Imports
  */
 
-import trigger from 'trigger-event'
-import raf from 'component-raf'
-import virtex from '../src'
-import element from 'virtex-element'
 import test from 'tape'
-import {createStore, applyMiddleware} from 'redux'
+import virtex from '../src'
 import dom from 'virtex-dom'
-import component from 'virtex-component'
+import raf from 'component-raf'
 import delegant from 'delegant'
+import trigger from 'trigger-event'
+import element from 'virtex-element'
+import component from 'virtex-component'
+import {createStore, applyMiddleware} from 'redux'
 
 /**
  * Setup store
  */
 
-const store = applyMiddleware(dom, component())(createStore)(() => {}, {})
+let context = {}
+let forceUpdate = false
+const store = applyMiddleware(dom, component({
+  getContext: () => context,
+  ignoreShouldUpdate: () => forceUpdate
+}))(createStore)(() => {}, {})
 
 /**
  * Initialize virtex
@@ -994,6 +999,46 @@ test('getProps', t => {
   t.equal(vals.render, 1, 'render')
   t.equal(vals.update, 1, 'onUpdate hook')
   t.equal(vals.remove, 1, 'onRemove hook')
+
+  teardown({renderer, el})
+  t.end()
+})
+
+test('should have context', t => {
+  const {mount, renderer, el} = setup(t.equal)
+  let a, b, c
+
+  const CtxTest = {
+    getProps (props, context) {
+      return {
+        ...props,
+        ...context
+      }
+    },
+
+    render ({props}) {
+      a = props.a
+      b = props.b
+      c = props.c
+      return <span/>
+    }
+  }
+
+  context = {b: 2}
+  mount(<CtxTest a={1} />)
+
+  t.equal(a, 1)
+  t.equal(b, 2)
+  t.equal(c, undefined)
+
+  context = {b: 2, c: 3}
+  forceUpdate = true
+  mount(<CtxTest a={1} />)
+  forceUpdate = false
+
+  t.equal(a, 1)
+  t.equal(b, 2)
+  t.equal(c, 3)
 
   teardown({renderer, el})
   t.end()
