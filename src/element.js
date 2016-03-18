@@ -9,6 +9,8 @@ import isUndefined from '@f/is-undefined'
  */
 
 function element (type, props) {
+  if (!type) throw new Error('Virtex error: Invalid component. Did you import a component that doesn\'t exist?')
+
   const len = arguments.length
   const children = []
 
