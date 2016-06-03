@@ -14,7 +14,7 @@ function isThunk (a) {
 }
 
 function isSameNode (a, b) {
-  return a.type === b.type
+  return a.type === b.type && a.key === b.key
 }
 
 function getKey (a) {
