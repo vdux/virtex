@@ -1044,6 +1044,21 @@ test('should have context', t => {
   t.end()
 })
 
+test('event handlers should be removed properly', t => {
+  const {renderer, el, mount} = setup(t.equal)
+  mount(<span onClick={() => t.pass()} />)
+
+  t.plan(1)
+  const child = el.children[0]
+  trigger(child, 'click')
+  mount(<span />)
+  trigger(child, 'click')
+
+  teardown({renderer, el})
+  t.end()
+})
+
+
 test('diff', t => {
   t.test('reverse', diffXf(r => r.reverse()))
   t.test('prepend (1)', diffXf(r => [11].concat(r)))
