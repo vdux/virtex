@@ -436,9 +436,9 @@ test('nested component lifecycle hooks fire in the correct order', t => {
   mount(<Wrapper></Wrapper>)
 
   t.deepEqual(log, [
-    'GrandParent onRemove',
+    'Child onRemove',
     'Parent onRemove',
-    'Child onRemove'
+    'GrandParent onRemove'
   ], 'unmounted')
 
   mount(
@@ -455,9 +455,9 @@ test('nested component lifecycle hooks fire in the correct order', t => {
   teardown({renderer, el})
 
   t.deepEqual(log, [
-    'GrandParent onRemove',
+    'Child onRemove',
     'Parent onRemove',
-    'Child onRemove'
+    'GrandParent onRemove'
   ], 'unmounted')
 
   t.end()

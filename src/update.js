@@ -66,13 +66,14 @@ function update (effect) {
   }
 
   function unrenderThunks (vnode) {
-    while (isThunk(vnode)) {
+    if (isThunk(vnode)) {
+      const child = unrenderThunks(effect(updateThunk(vnode)))
       effect(destroyThunk(vnode))
-      vnode = effect(updateThunk(vnode))
+      return child
+    } else {
+      forEach(unrenderThunks, vnode.children)
+      return vnode
     }
-
-    forEach(unrenderThunks, vnode.children)
-    return vnode
   }
 }
 
