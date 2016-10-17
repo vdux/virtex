@@ -105,7 +105,7 @@ test('renderString: lifecycle hooks', t => {
 // })
 
 test('renderString: input.value', t => {
-  t.equal(render(<input value='foo' />), '<input value="foo"></input>', 'value rendered')
+  t.equal(render(<input value='foo' />), '<input value="foo" />', 'value rendered')
   t.end()
 })
 
@@ -118,25 +118,25 @@ test('renderString: function attributes', t => {
 test('renderString: empty attributes', t => {
   t.equal(
     render(<input type='checkbox' value='' />),
-    '<input type="checkbox" value=""></input>',
+    '<input type="checkbox" value="" />',
     'empty string attribute not rendered'
   )
 
   t.equal(
     render(<input type='checkbox' value={0} />),
-    '<input type="checkbox" value="0"></input>',
+    '<input type="checkbox" value="0" />',
     'zero attribute not rendered'
   )
 
   t.equal(
     render(<input type="checkbox" disabled={false} />),
-    '<input type="checkbox"></input>',
+    '<input type="checkbox" />',
     'false attribute unexpectedly rendered'
   )
 
   t.equal(
     render(<input type="checkbox" disabled={null} />),
-    '<input type="checkbox"></input>',
+    '<input type="checkbox" />',
     'null attribute unexpectedly rendered'
   )
 
@@ -144,7 +144,7 @@ test('renderString: empty attributes', t => {
 
   t.equal(
     render(<input type="checkbox" disabled={disabled} />),
-    '<input type="checkbox"></input>',
+    '<input type="checkbox" />',
     'undefined attribute unexpectedly rendered'
   )
 
