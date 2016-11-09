@@ -2,18 +2,19 @@
  * Imports
  */
 
-import virtex from '../src'
-import element from 'virtex-element'
-import test from 'tape'
 import {createStore, applyMiddleware} from 'redux'
-import string from 'virtex-string'
 import component from 'virtex-component'
+import element from 'virtex-element'
+import string from 'virtex-string'
+import falsy from 'redux-falsy'
+import virtex from '../src'
+import test from 'tape'
 
 /**
  * Setup
  */
 
-const store = applyMiddleware(string, component())(createStore)(() => {}, {})
+const store = applyMiddleware(falsy, string, component())(createStore)(() => {}, {})
 const {create, update} = virtex(store.dispatch)
 
 function mount () {
@@ -111,6 +112,7 @@ test('renderString: input.value', t => {
 
 test('renderString: function attributes', t => {
   function foo() { return 'blah' }
+  foo.$$fn = true
   t.equal(render(<div onClick={foo} />), '<div></div>', 'attribute not rendered')
   t.end()
 })

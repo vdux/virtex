@@ -7,6 +7,7 @@ import virtex from '../src'
 import dom from 'virtex-dom'
 import raf from 'component-raf'
 import delegant from 'delegant'
+import falsy from 'redux-falsy'
 import trigger from 'trigger-event'
 import element from 'virtex-element'
 import component from 'virtex-component'
@@ -18,7 +19,7 @@ import {createStore, applyMiddleware} from 'redux'
 
 let context = {}
 let forceUpdate = false
-const store = applyMiddleware(dom, component({
+const store = applyMiddleware(falsy, dom, component({
   getContext: () => context,
   ignoreShouldUpdate: () => forceUpdate
 }))(createStore)(() => {}, {})
@@ -653,6 +654,9 @@ test('adding, removing and updating events', t => {
   const onclicka = () => count += 1
   const onclickb = () => count -= 1
 
+  onclicka.$$fn = true
+  onclickb.$$fn = true
+
   mount(<Page clicker={onclicka} />)
   trigger($('span'), 'click')
   t.equal(count, 1, 'event added')
@@ -674,13 +678,16 @@ test('should bubble events', t => {
   const {mount, renderer, el, $} = setup(t.equal)
   const state = {}
 
+  onParentClick.$$fn = true
+  onClickTest.$$fn = true
+
   const Test = {
     render: function ({props}) {
       const {state} = props
 
       return (
         <div onClick={onParentClick}>
-          <div class={state.active ? 'active' : ''} onClick={onClickTest}>
+          <div class={state.active ? 'active' : ''} onClick={{handler: onClickTest, decoder: e => e}}>
             <a>link</a>
           </div>
         </div>
@@ -872,6 +879,8 @@ test('moving components with keys', t => {
 
   // Moving event handlers
   const clicked = () => t.pass('event handler moved')
+  clicked.$$fn = true
+
   mount(
     <ul>
       <ListItem key="foo">One</ListItem>
@@ -913,11 +922,17 @@ test('updating event handlers when children are removed', t => {
   const ListItem = {
     shouldUpdate () { return true },
     render ({props}) {
+      doSplice.$$fn = true
+
       return (
         <li>
-          <a onClick={e => { items.splice(props.index, 1); console.log('remove') }} />
+          <a onClick={doSplice} />
         </li>
       )
+
+      function doSplice () {
+        items.splice(props.index, 1)
+      }
     }
   }
 
@@ -971,82 +986,47 @@ test('array jsx', t => {
   t.end()
 })
 
-test('getProps', t => {
-  const {mount, renderer, el} = setup(t.equal)
-  const vals = {}
-  function save (name) { return ({props}) => { vals[name] = props.value }}
-  const Test = {
-    getProps () {
-      return {
-        value: 1
-      }
-    },
-    onCreate: save('create'),
-    render ({props}) {
-      vals.render = props.value
-      return <span></span>
-    },
-    onUpdate: save('update'),
-    onRemove: save('remove'),
-    shouldUpdate () { return true }
-  }
-
-  mount(<Test value={3} />)
-  mount(<Test value={4} />)
-  mount(<span></span>)
-
-  t.equal(vals.create, 1, 'onCreate hook')
-  t.equal(vals.render, 1, 'render')
-  t.equal(vals.update, 1, 'onUpdate hook')
-  t.equal(vals.remove, 1, 'onRemove hook')
-
-  teardown({renderer, el})
-  t.end()
-})
-
 test('should have context', t => {
   const {mount, renderer, el} = setup(t.equal)
-  let a, b, c
+  let middle, bottom
 
-  const CtxTest = {
-    getProps (props, context) {
+  const CtxParent = {
+    getContext ({props}) {
       return {
-        ...props,
-        ...context
+        a: 1,
+        b: 2,
+        d: 1 + props.d
       }
     },
 
     render ({props}) {
-      a = props.a
-      b = props.b
-      c = props.c
+      return <CtxTest {...props} />
+    }
+  }
+
+  const CtxTest = {
+    render ({context}) {
+      t.equal(context.a, 1)
+      t.equal(context.b, 2)
+      t.equal(context.d, 1 + d)
+
       return <span/>
     }
   }
 
-  context = {b: 2}
-  mount(<CtxTest a={1} />)
-
-  t.equal(a, 1)
-  t.equal(b, 2)
-  t.equal(c, undefined)
-
-  context = {b: 2, c: 3}
-  forceUpdate = true
-  mount(<CtxTest a={1} />)
-  forceUpdate = false
-
-  t.equal(a, 1)
-  t.equal(b, 2)
-  t.equal(c, 3)
-
+  let d = 0
+  mount(<CtxParent d={d} />)
+  d = 1
+  mount(<CtxParent d={d} />)
   teardown({renderer, el})
   t.end()
 })
 
 test('event handlers should be removed properly', t => {
   const {renderer, el, mount} = setup(t.equal)
-  mount(<span onClick={() => t.pass()} />)
+  const pass = () => t.pass()
+  pass.$$fn = true
+  mount(<span onClick={pass} />)
 
   t.plan(1)
   const child = el.children[0]

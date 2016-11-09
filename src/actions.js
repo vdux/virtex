@@ -18,10 +18,11 @@ const types = {
  */
 
 function vnodeAction (type) {
-  return (vnode, prev) => ({
+  return (vnode, prev, parent) => ({
     type,
     vnode,
-    prev
+    prev,
+    parent
   })
 }
 
